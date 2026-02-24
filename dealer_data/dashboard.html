@@ -88,6 +88,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .legend-item { display: flex; align-items: center; gap: 4px; }
 .legend-dot { width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); }
 
+#crop-legend::-webkit-scrollbar { width: 4px; }
+#crop-legend::-webkit-scrollbar-thumb { background: #3a3d4a; border-radius: 2px; }
+#crop-legend::-webkit-scrollbar-track { background: transparent; }
+.crop-legend-row { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 10px; color: #aaa; }
+.crop-legend-swatch { width: 14px; height: 12px; border-radius: 2px; flex-shrink: 0; border: 1px solid rgba(255,255,255,0.15); }
+.crop-legend-cat { font-size: 9px; color: #60a5fa; font-weight: 600; margin-top: 6px; margin-bottom: 2px; }
+
 #brand-chart { padding: 10px 16px; border-bottom: 1px solid #2a2d3a; }
 .bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; font-size: 10px; cursor: pointer; padding: 1px 0; }
 .bar-row:hover { background: #252836; }
@@ -229,6 +236,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     </div>
     <div id="filters-wrap">
         <input type="text" id="search-box" placeholder="Search dealers, cities, countries..." style="margin-bottom:6px;">
+        <label class="checkbox-row" style="margin-bottom:4px;">
+            <input type="checkbox" id="ag-only-toggle" onchange="applyFilters()">
+            Ag tractors only (exclude lawn, construction, forestry)
+        </label>
         <label class="checkbox-row" style="margin-bottom:10px;">
             <input type="checkbox" id="coloc-toggle" onchange="applyFilters()">
             Count co-located dealers as one (same parent, &lt;1 mi)
@@ -299,10 +310,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
                     <option value="brand">Brand</option>
                 </select>
             </div>
-            <div style="font-size:10px;color:#666;margin-top:4px;">
-                Highlights areas served by only one company/brand within the radius. Green = monopoly, yellow = duopoly.
+            <div class="control-row">
+                <label>Color by</label>
+                <select id="mono-color-mode" onchange="redrawOverlays()">
+                    <option value="competition" selected>Competition Level</option>
+                    <option value="company">Who Has the Monopoly</option>
+                </select>
             </div>
-            <div class="panel-legend" style="margin-top:8px;">
+            <div style="font-size:10px;color:#666;margin-top:4px;">
+                <span id="mono-hint-competition">Green = monopoly, yellow = duopoly, transparent = 3+ competitive.</span>
+                <span id="mono-hint-company" style="display:none;">Colors show which company dominates. Only monopoly &amp; duopoly areas are painted.</span>
+            </div>
+            <div class="panel-legend" id="mono-legend" style="margin-top:8px;">
                 <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> Sole company</div>
                 <div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> 2 companies</div>
                 <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.05);"></div> 3+ (competitive)</div>
@@ -331,7 +350,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
                     oninput="updateCropOpacity(this.value)">
                 <span class="range-val" id="crop-opacity-val">50%</span>
             </div>
+            <div class="control-row">
+                <label>Colors</label>
+                <select id="crop-palette" onchange="switchCropPalette()">
+                    <option value="default" selected>USDA Default</option>
+                    <option value="vivid">Vivid</option>
+                    <option value="pastel">Pastel</option>
+                    <option value="deuteranopia">Colorblind-safe</option>
+                </select>
+            </div>
             <div id="crop-desc" style="font-size:10px;color:#666;">USDA Cropland Data Layer - shows crop types across the US</div>
+            <div id="crop-legend-wrap" style="margin-top:8px;">
+                <div id="crop-legend-toggle" style="font-size:10px;color:#60a5fa;cursor:pointer;user-select:none;" onclick="toggleCropLegend()">&#9654; Show legend</div>
+                <div id="crop-legend" style="display:none;max-height:220px;overflow-y:auto;margin-top:4px;padding-right:4px;"></div>
+            </div>
         </div>
     </div>
 
@@ -486,6 +518,30 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json')
     })
     .catch(() => {}); // fail silently, just won't clip
 
+const _MAJOR_AG_KW = ['4 wd','combines','large','cotton','sprayer','tillage','forage','harvester','baler','planter','seeder'];
+function isAgDealer(d) {
+    const brand = d[F.brand], dtype = (d[F.type]||'').toLowerCase(), svc = (d[F.services]||'').toLowerCase();
+    if (brand === 'John Deere') {
+        return dtype.includes('agriculture') || !dtype;
+    }
+    if (brand === 'Case IH') {
+        if (!svc) return true;
+        if (_MAJOR_AG_KW.some(k => svc.includes(k))) return true;
+        if (svc.includes('agricultural tractors')) return true;
+        if (svc.includes('under 60') && !_MAJOR_AG_KW.some(k => svc.includes(k))) return false;
+        return true;
+    }
+    if (brand === 'New Holland') {
+        if (!svc) return true;
+        if (svc.includes('tractors') || _MAJOR_AG_KW.some(k => svc.includes(k))) return true;
+        const parts = svc.split(';').map(s => s.trim()).filter(Boolean);
+        const cOnly = parts.every(s => /(excavat|excav|skidsteer|ssl|backhoe|loader)/i.test(s));
+        if (cOnly && parts.length) return false;
+        return true;
+    }
+    return true;
+}
+
 function buildSpatialIndex() {
     spatialGrid = {};
     allDealers.forEach((d, i) => {
@@ -566,8 +622,8 @@ function countNearbyGroups(dealer, radiusMiles, scope) {
     const cellRadius = Math.ceil(radiusMiles / 50) + 1;
     const gx = Math.floor(lat / GRID_SIZE), gy = Math.floor(lng / GRID_SIZE);
     const field = scope === 'brand' ? F.brand : F.parent;
-    const groups = new Set();
-    groups.add(dealer[field]); // include self
+    const groupCounts = {};
+    groupCounts[dealer[field]] = 1;
     for (let dx = -cellRadius; dx <= cellRadius; dx++) {
         for (let dy = -cellRadius; dy <= cellRadius; dy++) {
             const cell = spatialGrid[`${gx+dx},${gy+dy}`];
@@ -576,11 +632,20 @@ function countNearbyGroups(dealer, radiusMiles, scope) {
                 const d = allDealers[idx];
                 if (d === dealer) continue;
                 const dist = haversineMiles(lat, lng, d[F.lat], d[F.lng]);
-                if (dist <= radiusMiles) groups.add(d[field]);
+                if (dist <= radiusMiles) {
+                    const g = d[field];
+                    groupCounts[g] = (groupCounts[g] || 0) + 1;
+                }
             }
         }
     }
-    return groups.size;
+    const groups = Object.keys(groupCounts);
+    // Dominant = group with most dealers nearby
+    let dominant = dealer[field], maxCount = 0;
+    for (const [g, c] of Object.entries(groupCounts)) {
+        if (c > maxCount) { maxCount = c; dominant = g; }
+    }
+    return { size: groups.length, dominant, groups };
 }
 
 // Map init
@@ -790,19 +855,59 @@ function redrawOverlays() {
     if (monopolyOn && filteredDealers.length) {
         const radius = parseInt(document.getElementById('mono-radius').value) || 50;
         const scope = document.getElementById('mono-scope').value;
+        const colorMode = document.getElementById('mono-color-mode').value;
+        const colorMap = scope === 'brand' ? BRAND_COLORS : PARENT_COLORS;
 
         // Precompute monopoly status
         const monopolyColors = new Map();
+        const monopolyInfo = new Map();
         filteredDealers.forEach(d => {
-            const n = countNearbyGroups(d, radius, scope);
-            if (n === 1) monopolyColors.set(d, '#22c55e');       // sole company
-            else if (n === 2) monopolyColors.set(d, '#eab308');   // duopoly
-            else monopolyColors.set(d, null);                     // competitive - transparent
+            const result = countNearbyGroups(d, radius, scope);
+            monopolyInfo.set(d, result);
+            if (colorMode === 'company') {
+                // Color by which company dominates (monopoly & duopoly only)
+                if (result.size <= 2) {
+                    monopolyColors.set(d, colorMap[result.dominant] || '#888');
+                } else {
+                    monopolyColors.set(d, null);
+                }
+            } else {
+                // Competition level colors
+                if (result.size === 1) monopolyColors.set(d, '#22c55e');
+                else if (result.size === 2) monopolyColors.set(d, '#eab308');
+                else monopolyColors.set(d, null);
+            }
         });
 
         const colorFn = d => monopolyColors.get(d) || null;
         if (!monopolyLayer) { monopolyLayer = new CanvasVoronoiOverlay(); map.addLayer(monopolyLayer); }
         monopolyLayer.setData(filteredDealers, colorFn, 0.30);
+
+        // Update hints
+        document.getElementById('mono-hint-competition').style.display = colorMode === 'competition' ? '' : 'none';
+        document.getElementById('mono-hint-company').style.display = colorMode === 'company' ? '' : 'none';
+
+        // Build company legend for "company" mode
+        if (colorMode === 'company') {
+            const seen = {};
+            filteredDealers.forEach(d => {
+                const info = monopolyInfo.get(d);
+                if (info && info.size <= 2) seen[info.dominant] = (seen[info.dominant] || 0) + 1;
+            });
+            const sorted = Object.entries(seen).sort((a, b) => b[1] - a[1]);
+            let legendHTML = '';
+            sorted.forEach(([name, count]) => {
+                const c = colorMap[name] || '#888';
+                legendHTML += `<div class="legend-item"><div class="legend-dot" style="background:${c};"></div> ${name} (${count})</div>`;
+            });
+            legendHTML += `<div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.05);"></div> 3+ (competitive)</div>`;
+            document.getElementById('mono-legend').innerHTML = legendHTML;
+        } else {
+            document.getElementById('mono-legend').innerHTML =
+                '<div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> Sole company</div>' +
+                '<div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> 2 companies</div>' +
+                '<div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.05);"></div> 3+ (competitive)</div>';
+        }
     }
 
     updateMapLegend();
@@ -832,11 +937,19 @@ function updateMapLegend() {
     }
 
     if (monopolyOn) {
+        const colorMode = document.getElementById('mono-color-mode').value;
         html += '<div class="legend-group">';
-        html += '<h4>Competition</h4>';
-        html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:#22c55e;"></div>Monopoly (1)</div>';
-        html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:#eab308;"></div>Duopoly (2)</div>';
-        html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.3);"></div>3+ (competitive)</div>';
+        if (colorMode === 'company') {
+            html += '<h4>Dominant Company</h4>';
+            // Pull from sidebar legend which is already built
+            const sidebarLegend = document.getElementById('mono-legend');
+            if (sidebarLegend) html += sidebarLegend.innerHTML;
+        } else {
+            html += '<h4>Competition</h4>';
+            html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:#22c55e;"></div>Monopoly (1)</div>';
+            html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:#eab308;"></div>Duopoly (2)</div>';
+            html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.3);"></div>3+ (competitive)</div>';
+        }
         html += '</div>';
     }
 
@@ -917,11 +1030,119 @@ function switchCropRegion() {
     map.off('click', onCropMapClick);
     cropRegion = newRegion;
     document.getElementById('crop-desc').textContent = CROP_LAYERS[newRegion].desc;
+    // Show/hide legend and palette for US only (EU layers have different classification)
+    const isUS = newRegion === 'us';
+    document.getElementById('crop-legend-wrap').style.display = isUS ? 'block' : 'none';
+    document.getElementById('crop-palette').parentElement.style.display = isUS ? 'flex' : 'none';
     if (cropOn) {
         cropLayer = createCropLayer(cropRegion);
         if (cropLayer) map.addLayer(cropLayer);
         if (cropRegion === 'us') map.on('click', onCropMapClick);
     }
+}
+
+// ===== Crop Legend & Color Palettes =====
+
+const CROP_PALETTES = {
+    default: null, // uses CDL_COLORS as-is
+    vivid: {
+        1:'#ffe100',2:'#ff0040',3:'#00bfff',4:'#ff6600',5:'#00cc00',6:'#ffff33',
+        21:'#ff0099',22:'#cc6633',23:'#ffcc33',24:'#cc8800',25:'#ff99cc',
+        26:'#808000',27:'#cc0099',28:'#cc66cc',29:'#990066',
+        36:'#ff66cc',37:'#66ff66',41:'#bb00ff',42:'#cc0000',43:'#993300',
+        61:'#cccc66',62:'#66cc66',63:'#006633',64:'#99cc66',65:'#ccbb99',
+        69:'#9933cc',72:'#cccc00',75:'#bbff00',76:'#3399cc',
+        82:'#888888',87:'#66aaff',111:'#336699',112:'#ccddff',
+        121:'#ddbbbb',122:'#bb9999',123:'#886666',124:'#664444',131:'#ccbb99',
+        141:'#339933',142:'#006633',143:'#99bb66',152:'#99cc66',
+        176:'#ddbb88',190:'#5599aa',195:'#66aaff'
+    },
+    pastel: {
+        1:'#fff3b0',2:'#ffb3b3',3:'#b3e0ff',4:'#ffd1a3',5:'#b3e6b3',6:'#ffffb3',
+        21:'#ffb3d9',22:'#d9b38c',23:'#ffe0a3',24:'#e0c080',25:'#f0c8e0',
+        26:'#c8c880',27:'#e0a0d0',28:'#d0a0c0',29:'#c080a0',
+        36:'#ffc0e0',37:'#c0f0c0',41:'#d0b0f0',42:'#e0a0a0',43:'#c0a080',
+        61:'#e0e0b0',62:'#b0e0b0',63:'#80b080',64:'#c0d8a0',65:'#e0d8c8',
+        69:'#c0a0d0',72:'#e0e0a0',75:'#d8f0a0',76:'#a0c0d8',
+        82:'#c0c0c0',87:'#a0c8f0',111:'#90a8c0',112:'#e0e8f0',
+        121:'#f0e0e0',122:'#e0d0d0',123:'#c8b0b0',124:'#b0a0a0',131:'#e0d8c8',
+        141:'#a0c8a0',142:'#80b080',143:'#c0d0a0',152:'#c0d8a0',
+        176:'#e8d8c0',190:'#a0c0c8',195:'#a0c8f0'
+    },
+    deuteranopia: {
+        1:'#0072b2',2:'#d55e00',3:'#56b4e9',4:'#e69f00',5:'#009e73',6:'#f0e442',
+        21:'#cc79a7',22:'#8c510a',23:'#dfc27d',24:'#bf812d',25:'#f6e8c3',
+        26:'#80cdc1',27:'#8c510a',28:'#c7eae5',29:'#35978f',
+        36:'#c51b7d',37:'#4d9221',41:'#7570b3',42:'#d95f02',43:'#a6611a',
+        61:'#dfc27d',62:'#a6dba0',63:'#1b7837',64:'#b8e186',65:'#f5f5f5',
+        69:'#762a83',72:'#e6f5d0',75:'#b2df8a',76:'#1f78b4',
+        82:'#969696',87:'#6baed6',111:'#2171b5',112:'#c6dbef',
+        121:'#fddbc7',122:'#f4a582',123:'#d6604d',124:'#b2182b',131:'#f5f5f5',
+        141:'#4daf4a',142:'#1b7837',143:'#b2df8a',152:'#b8e186',
+        176:'#fee0b6',190:'#5ab4ac',195:'#6baed6'
+    }
+};
+
+// Organized legend categories for readability
+const CROP_LEGEND_CATS = [
+    { label: 'Row Crops', codes: [1,2,3,4,5,6,10,11,41,45] },
+    { label: 'Small Grains', codes: [21,22,23,24,25,27,28,29,30,205] },
+    { label: 'Oilseeds & Fiber', codes: [31,32,33,34,35,36,37,38,39,58,59,60] },
+    { label: 'Vegetables', codes: [42,43,46,47,48,49,50,54,206,207,208,209,214,216,219,221,222,227,229,243,244,245,246,247,248,249] },
+    { label: 'Fruits & Nuts', codes: [55,66,67,68,69,70,71,72,74,75,76,77,204,210,211,212,213,217,218,220,223,242,250] },
+    { label: 'Double Crops', codes: [26,225,226,230,231,232,233,234,235,236,237,238,239,240,241,254] },
+    { label: 'Other Ag', codes: [12,13,14,44,51,52,53,56,57,224] },
+    { label: 'Non-Ag / Land Cover', codes: [61,62,63,64,65,82,83,87,88,92,111,112,121,122,123,124,131,141,142,143,152,176,190,195] }
+];
+
+let cropLegendOpen = false;
+let activePalette = 'default';
+
+function getActiveCropColors() {
+    return CROP_PALETTES[activePalette] || CDL_COLORS;
+}
+
+function toggleCropLegend() {
+    cropLegendOpen = !cropLegendOpen;
+    const el = document.getElementById('crop-legend');
+    const tog = document.getElementById('crop-legend-toggle');
+    el.style.display = cropLegendOpen ? 'block' : 'none';
+    tog.innerHTML = cropLegendOpen ? '&#9660; Hide legend' : '&#9654; Show legend';
+    if (cropLegendOpen) renderCropLegend();
+}
+
+function renderCropLegend() {
+    const el = document.getElementById('crop-legend');
+    const colors = getActiveCropColors();
+    let html = '';
+    for (const cat of CROP_LEGEND_CATS) {
+        const items = cat.codes.filter(c => CDL_CROPS[c] && colors[c]);
+        if (!items.length) continue;
+        html += `<div class="crop-legend-cat">${cat.label}</div>`;
+        for (const c of items) {
+            html += `<div class="crop-legend-row"><div class="crop-legend-swatch" style="background:${colors[c]}"></div>${CDL_CROPS[c]}</div>`;
+        }
+    }
+    // Add any remaining codes not in categories
+    const listed = new Set(CROP_LEGEND_CATS.flatMap(c => c.codes));
+    const extra = Object.keys(CDL_CROPS).map(Number).filter(c => !listed.has(c) && colors[c]);
+    if (extra.length) {
+        html += `<div class="crop-legend-cat">Other</div>`;
+        for (const c of extra) {
+            html += `<div class="crop-legend-row"><div class="crop-legend-swatch" style="background:${colors[c]}"></div>${CDL_CROPS[c]}</div>`;
+        }
+    }
+    el.innerHTML = html;
+}
+
+function switchCropPalette() {
+    activePalette = document.getElementById('crop-palette').value;
+    if (cropLegendOpen) renderCropLegend();
+    // Note: WMS tiles are server-rendered with fixed colors — the palette selector
+    // changes legend colors to match the selected scheme. For the US CDL layer,
+    // the USDA Default palette matches the actual tile colors. Alternative palettes
+    // are provided for reference/print use and will match if tiles are re-styled.
+    // The crop-click popup already uses CDL_COLORS for its history chart.
 }
 
 function updateCropOpacity(val) {
@@ -1025,9 +1246,10 @@ function fetchCropHistory(lat, lng) {
 }
 
 function renderCropHistory(results) {
+    const colors = getActiveCropColors();
     let html = '<div style="font-size:10px;color:#666;margin-bottom:6px;">USDA CDL crop history</div>';
     results.forEach(r => {
-        const bgColor = CDL_COLORS[r.cropCode] || 'transparent';
+        const bgColor = colors[r.cropCode] || CDL_COLORS[r.cropCode] || 'transparent';
         const dot = bgColor !== 'transparent' ? `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${bgColor};margin-right:4px;vertical-align:middle;"></span>` : '';
         html += `<div class="crop-year-row"><span class="year">${r.year}</span><span class="crop-name">${dot}${r.cropName}</span></div>`;
     });
@@ -1215,10 +1437,12 @@ function toggleDriveTimeMode() {
 }
 
 function applyFilters() {
+    const agOnly = document.getElementById('ag-only-toggle') && document.getElementById('ag-only-toggle').checked;
     filteredDealers = allDealers.filter(d => {
         if (!activeFilters.parents.has(d[F.parent])) return false;
         if (!activeFilters.brands.has(d[F.brand])) return false;
         if (!activeFilters.regions.has(getRegion(d[F.cc]))) return false;
+        if (agOnly && !isAgDealer(d)) return false;
         if (activeFilters.search) {
             const hay = `${d[F.name]} ${d[F.city]} ${d[F.cn]} ${d[F.cc]} ${d[F.brand]} ${d[F.state]}`.toLowerCase();
             if (!hay.includes(activeFilters.search)) return false;
