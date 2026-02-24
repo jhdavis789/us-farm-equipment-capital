@@ -1,0 +1,893 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>U.S. Farm Equipment Capital Stock Analysis</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1"></script>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; background: #f8fafc; color: #1e293b; line-height: 1.6; }
+header { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); color: white; padding: 2.5rem 2rem 2rem; }
+header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.25rem; }
+header p { font-size: 1.05rem; color: #94a3b8; }
+.container { max-width: 1400px; margin: 0 auto; padding: 0 1.5rem; }
+.stats-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: -1.5rem 0 2rem; position: relative; z-index: 1; }
+.stat-card { background: white; border-radius: 12px; padding: 1.25rem 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06); }
+.stat-card .label { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; color: #64748b; font-weight: 600; }
+.stat-card .value { font-size: 1.75rem; font-weight: 700; color: #0f172a; margin: 0.15rem 0; }
+.stat-card .sub { font-size: 0.82rem; color: #94a3b8; }
+.stat-card.warn .value { color: #dc2626; }
+.stat-card.good .value { color: #16a34a; }
+section { margin-bottom: 2.5rem; }
+section h2 { font-size: 1.4rem; font-weight: 700; color: #0f172a; margin-bottom: 0.35rem; padding-top: 1rem; }
+section .subtitle { font-size: 0.92rem; color: #64748b; margin-bottom: 1.25rem; }
+.chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+.chart-box { background: white; border-radius: 12px; padding: 1.5rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.chart-box h3 { font-size: 1rem; font-weight: 600; color: #334155; margin-bottom: 0.25rem; }
+.chart-box .chart-note { font-size: 0.78rem; color: #94a3b8; margin-bottom: 0.75rem; }
+.chart-box canvas { width: 100% !important; }
+.chart-box.full { grid-column: 1 / -1; }
+.insight-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 10px; padding: 1rem 1.25rem; margin: 1rem 0; font-size: 0.9rem; color: #92400e; }
+.insight-box strong { color: #78350f; }
+.sources { background: white; border-radius: 12px; padding: 2rem; margin-bottom: 3rem; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+.sources h2 { margin-bottom: 1rem; padding-top: 0; }
+.sources ul { list-style: none; padding: 0; }
+.sources li { padding: 0.3rem 0; font-size: 0.88rem; color: #475569; }
+.sources li a { color: #2563eb; text-decoration: none; }
+.sources li a:hover { text-decoration: underline; }
+footer { text-align: center; padding: 2rem; color: #94a3b8; font-size: 0.82rem; border-top: 1px solid #e2e8f0; }
+@media (max-width: 900px) {
+  .chart-grid { grid-template-columns: 1fr; }
+  .stats-row { grid-template-columns: repeat(2, 1fr); }
+  header h1 { font-size: 1.5rem; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="container">
+    <h1>U.S. Farm Equipment Capital Stock</h1>
+    <p>Age, Depreciation, and the Investment Gap &mdash; Built from USDA Census, BEA, FRED, and AEM Data</p>
+  </div>
+</header>
+
+<div class="container">
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="label">Total Tractor Fleet</div>
+      <div class="value">3.78M</div>
+      <div class="sub">2022 USDA Census &mdash; down 18% from 2002</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="label">Fleet Under 5 Years Old</div>
+      <div class="value">11.6%</div>
+      <div class="sub">440,828 of 3,784,743 tractors</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="label">2025 Investment/Depreciation</div>
+      <div class="value">0.73x</div>
+      <div class="sub">Fleet depreciating 37% faster than replaced</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="label">Annual Investment Gap</div>
+      <div class="value">$13.7B</div>
+      <div class="sub">$36.5B spent vs $50.2B depreciation</div>
+    </div>
+    <div class="stat-card">
+      <div class="label">Capital Stock (Current Cost)</div>
+      <div class="value">$359B</div>
+      <div class="sub">BEA Q3 2025 &mdash; nonresidential equipment</div>
+    </div>
+    <div class="stat-card warn">
+      <div class="label">100+ HP Replacement Cycle</div>
+      <div class="value">46 yrs</div>
+      <div class="sub">Recommended economic life: 15 years</div>
+    </div>
+  </div>
+
+  <!-- Section 1: The Investment Gap -->
+  <section>
+    <h2>The Investment Gap</h2>
+    <p class="subtitle">Gross investment in agricultural machinery vs. capital consumption (depreciation), 1970&ndash;2025. When investment falls below depreciation, the fleet is shrinking in real terms.</p>
+    <div class="chart-grid">
+      <div class="chart-box full">
+        <h3>Gross Investment vs. Depreciation</h3>
+        <div class="chart-note">Source: BEA via FRED &mdash; C268RC1A027NBEA (investment) and BOGZ1FA136330023Q (depreciation, annualized from quarterly SAAR)</div>
+        <canvas id="investVsDeprecChart" height="90"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Investment-to-Depreciation Ratio</h3>
+        <div class="chart-note">Ratio > 1.0 = fleet renewal. Ratio < 1.0 = fleet shrinking. The 1.0 line is the breakeven threshold.</div>
+        <canvas id="ecRatioChart" height="100"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Cumulative Net Investment Since 1970</h3>
+        <div class="chart-note">Running total of (investment - depreciation). Negative = accumulated underinvestment.</div>
+        <canvas id="cumulativeNetChart" height="100"></canvas>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>Key finding:</strong> The U.S. farm equipment fleet has been in net decline since 2023. The 2025 investment-to-depreciation ratio of 0.73x matches the worst levels of the 2016&ndash;2017 downturn. At current rates, farmers are replacing only 73 cents of equipment for every dollar that wears out. The cumulative effect over decades of cyclical underinvestment has left the fleet far older than economically optimal.
+    </div>
+  </section>
+
+  <!-- Section 2: Fleet Composition -->
+  <section>
+    <h2>Fleet Composition &amp; Size</h2>
+    <p class="subtitle">USDA Census of Agriculture data (every 5 years). The fleet is shrinking overall but shifting toward larger, more powerful machines.</p>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Tractors on U.S. Farms by Horsepower Class</h3>
+        <div class="chart-note">Source: USDA Census of Agriculture, Table 45</div>
+        <canvas id="fleetByHPChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Combines, Balers &amp; Other Equipment</h3>
+        <div class="chart-note">Source: USDA Census of Agriculture, Table 45</div>
+        <canvas id="otherEquipChart" height="110"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 3: Fleet Age -->
+  <section>
+    <h2>Fleet Age</h2>
+    <p class="subtitle">How old is the equipment? The Census only tracks two buckets: under 5 years and 5+ years. We derive the implied replacement cycle from Census stock data and AEM annual sales.</p>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Share of Fleet Under 5 Years Old</h3>
+        <div class="chart-note">Source: USDA Census of Agriculture. Only ~12% of the fleet is "new" in any given Census year.</div>
+        <canvas id="ageShareChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Implied Replacement Cycle by HP Class</h3>
+        <div class="chart-note">Census fleet &divide; AEM annual sales = years to fully replace fleet at current sales rate. Red dashed line = 15-year recommended economic life.</div>
+        <canvas id="replacementCycleChart" height="110"></canvas>
+      </div>
+      <div class="chart-box full">
+        <h3>Estimated Replacement Cycle Over Time (by HP Class)</h3>
+        <div class="chart-note">Using 2022 Census fleet counts and AEM annual sales for each year. Shows how the replacement cycle expands during downturns.</div>
+        <canvas id="replacementCycleTimeChart" height="80"></canvas>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>The serious farming equipment is barely turning over.</strong> At 2024 sales rates, it would take 46 years to replace the 100+ HP tractor fleet and 54 years to replace combines. Even at the 2021 boom peak, large tractors were on a 36-year replacement cycle &mdash; 2.4x their recommended 15-year economic life. The <40 HP segment (mostly hobby/lifestyle tractors) turns over quickly, masking the severity of underinvestment in the equipment that actually feeds the country.
+    </div>
+  </section>
+
+  <!-- Section 4: Capital Stock & Prices -->
+  <section>
+    <h2>Capital Stock &amp; Equipment Prices</h2>
+    <p class="subtitle">The dollar value of farm equipment has risen dramatically, but much of this reflects price inflation rather than real fleet growth.</p>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Net Capital Stock at Current Cost</h3>
+        <div class="chart-note">Source: BEA via FRED (BOGZ1FL135013265Q, Q4 values). Current-cost net stock of farm business nonresidential equipment.</div>
+        <canvas id="netStockChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Agricultural Machinery Price Index</h3>
+        <div class="chart-note">Source: BEA via FRED (B268RG3A086NBEA). Index = 100 in 2017. Prices up 29% since 2017, 108% since 1997.</div>
+        <canvas id="priceIndexChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Real Investment (Inflation-Adjusted)</h3>
+        <div class="chart-note">Source: BEA via FRED (C268RX1A020NBEA). Billions of 2017 dollars. Strips out price inflation to show actual volume.</div>
+        <canvas id="realInvestChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Census: Market Value of Equipment on Farms</h3>
+        <div class="chart-note">Source: USDA Census of Agriculture, Table 44. Self-reported market value by farm operators.</div>
+        <canvas id="censusMachValueChart" height="110"></canvas>
+      </div>
+    </div>
+    <div class="insight-box">
+      <strong>Price inflation is masking the real decline.</strong> In nominal terms, the capital stock has risen from $270B (2017) to $359B (2025). But real investment peaked at $48.7B in 2014 and has fallen to $28.2B in 2025 &mdash; a 42% decline in actual equipment volumes. Equipment prices have risen 29% since 2017 alone (and 108% since 1997), meaning farmers are paying much more for each unit of productive capacity.
+    </div>
+  </section>
+
+  <!-- Section 5: Trade Flows -->
+  <section>
+    <h2>Trade Flows</h2>
+    <p class="subtitle">The U.S. is a large net importer of tractors (mostly compact/utility from Asia) and a net exporter of combines and large equipment.</p>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>Tractor Trade: Imports vs. Exports (HS 8701)</h3>
+        <div class="chart-note">Source: UN Comtrade (2000-2009), Census Bureau (2010-2024). All tractors including road tractors.</div>
+        <canvas id="tradeFlowChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Tractor Trade Balance</h3>
+        <div class="chart-note">Negative = net imports. The deficit widened to $12.4B in 2022 before narrowing.</div>
+        <canvas id="tradeBalanceChart" height="110"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Section 6: AEM Sales -->
+  <section>
+    <h2>Recent Equipment Sales</h2>
+    <p class="subtitle">Association of Equipment Manufacturers (AEM) retail sales data, 2019&ndash;2024.</p>
+    <div class="chart-grid">
+      <div class="chart-box">
+        <h3>U.S. Tractor Sales by HP Class</h3>
+        <div class="chart-note">Source: AEM year-end reports. 2019-2020 sub-category figures are estimates; 2022-2024 are exact.</div>
+        <canvas id="aemSalesChart" height="110"></canvas>
+      </div>
+      <div class="chart-box">
+        <h3>Combine Sales</h3>
+        <div class="chart-note">Source: AEM. Self-propelled combine harvester-thresher retail sales.</div>
+        <canvas id="aemCombineChart" height="110"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <!-- Data Sources -->
+  <div class="sources">
+    <h2>Data Sources &amp; Methodology</h2>
+    <ul>
+      <li><strong>Investment (Gross):</strong> BEA/FRED series C268RC1A027NBEA &mdash; Private fixed investment in agricultural machinery, nominal, annual 1929&ndash;2025. <a href="https://fred.stlouisfed.org/series/C268RC1A027NBEA" target="_blank">FRED</a></li>
+      <li><strong>Investment (Real):</strong> BEA/FRED series C268RX1A020NBEA &mdash; Real private fixed investment in agricultural machinery, 2017 dollars, 2007&ndash;2025. <a href="https://fred.stlouisfed.org/series/C268RX1A020NBEA" target="_blank">FRED</a></li>
+      <li><strong>Depreciation:</strong> BEA/FRED series BOGZ1FA136330023Q &mdash; Farm business consumption of fixed capital, nonresidential equipment, quarterly SAAR, 1946&ndash;2025. Annual values = average of 4 quarters. <a href="https://fred.stlouisfed.org/series/BOGZ1FA136330023Q" target="_blank">FRED</a></li>
+      <li><strong>Net Capital Stock:</strong> BEA/FRED series BOGZ1FL135013265Q &mdash; Farm business nonresidential equipment, current-cost net stock, quarterly, 1945&ndash;2025. <a href="https://fred.stlouisfed.org/series/BOGZ1FL135013265Q" target="_blank">FRED</a></li>
+      <li><strong>Price Index:</strong> BEA/FRED series B268RG3A086NBEA &mdash; Agricultural machinery price index, 2017=100, 1929&ndash;2025. <a href="https://fred.stlouisfed.org/series/B268RG3A086NBEA" target="_blank">FRED</a></li>
+      <li><strong>Census Fleet Data:</strong> USDA Census of Agriculture, Table 45 &mdash; Selected Machinery and Equipment on Operation. Tractors by HP class, age, combines, etc. <a href="https://www.nass.usda.gov/AgCensus/" target="_blank">NASS</a> / <a href="https://quickstats.nass.usda.gov/" target="_blank">Quick Stats</a></li>
+      <li><strong>Census Machinery Values:</strong> USDA Census of Agriculture, Table 44 &mdash; Value of Machinery and Equipment on Operation. <a href="https://www.nass.usda.gov/AgCensus/" target="_blank">NASS</a></li>
+      <li><strong>Trade Data (2000-2009):</strong> UN Comtrade API &mdash; HS 8701 (tractors), HS 8433 (harvesting/threshing machinery). <a href="https://comtradeplus.un.org/" target="_blank">Comtrade</a></li>
+      <li><strong>Trade Data (2010-2024):</strong> U.S. Census Bureau International Trade API &mdash; HS 8701, HS 8433, HS10-level detail. <a href="https://dataweb.usitc.gov/" target="_blank">USITC DataWeb</a></li>
+      <li><strong>AEM Sales:</strong> Association of Equipment Manufacturers monthly/annual retail sales reports. <a href="https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports" target="_blank">AEM</a></li>
+      <li><strong>Equipment Life Recommendations:</strong> Iowa State Extension, Ag Decision Maker A3-29 &mdash; 15 years for tractors, 10&ndash;12 years for combines. <a href="https://www.extension.iastate.edu/agdm/crops/html/a3-29.html" target="_blank">ISU</a></li>
+      <li><strong>Fleet Age Estimate (25&ndash;27 years):</strong> Myers et al. (2010), "Tractors and Rollover Protection in the United States," <em>J. Agromedicine</em> 15(3). <a href="https://pubmed.ncbi.nlm.nih.gov/20665310/" target="_blank">PubMed</a></li>
+    </ul>
+    <p style="margin-top:1rem; font-size:0.82rem; color:#94a3b8;">
+      <strong>Methodology notes:</strong> The investment-to-depreciation ratio is computed as gross nominal investment / annualized capital consumption (average of 4 quarterly SAAR values). Both series are from BEA national accounts and use the same price basis, making the ratio meaningful. "Implied replacement cycle" = Census stock / AEM annual retail sales. This overstates the cycle slightly because some sold units replace retired ones (not counted by Census) and some sales go to non-farm buyers (especially &lt;40 HP). For 100+ HP equipment, virtually all sales are to farms, so the metric is most reliable for that class.
+    </p>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    Data compiled February 2026. Dashboard built from publicly available U.S. government data (BEA, USDA, Census Bureau) and industry sources (AEM).
+  </div>
+</footer>
+
+<script>
+// ==============================
+// DATA
+// ==============================
+
+// Annual gross investment in ag machinery (billions nominal USD), 1970-2025
+const investYears = [];
+const investValues = [];
+const investRaw = {
+  1970:4.010,1971:3.918,1972:4.797,1973:6.391,1974:6.807,1975:8.546,1976:8.834,
+  1977:9.464,1978:10.734,1979:12.749,1980:11.600,1981:12.611,1982:9.513,1983:8.456,
+  1984:9.121,1985:7.302,1986:6.814,1987:7.179,1988:9.762,1989:11.985,1990:13.597,
+  1991:11.430,1992:10.202,1993:11.864,1994:13.428,1995:13.946,1996:14.088,1997:16.245,
+  1998:17.002,1999:12.625,2000:13.991,2001:14.983,2002:17.353,2003:19.075,2004:21.563,
+  2005:23.565,2006:22.557,2007:23.158,2008:26.892,2009:27.815,2010:25.910,2011:28.970,
+  2012:39.382,2013:46.492,2014:47.959,2015:36.845,2016:29.099,2017:28.745,2018:31.507,
+  2019:35.742,2020:34.624,2021:42.676,2022:47.965,2023:39.931,2024:41.081,2025:36.481
+};
+for (const [y,v] of Object.entries(investRaw)) { investYears.push(+y); investValues.push(v); }
+
+// Annual depreciation (billions, computed from quarterly SAAR averages)
+const deprecValues = [];
+const deprecRaw = {
+  1970:4.220,1971:4.515,1972:4.842,1973:5.258,1974:6.244,1975:7.541,1976:8.482,
+  1977:9.532,1978:10.636,1979:12.115,1980:13.890,1981:15.277,1982:16.159,1983:15.932,
+  1984:15.516,1985:14.970,1986:14.603,1987:14.116,1988:13.890,1989:14.104,1990:14.388,
+  1991:14.665,1992:14.667,1993:14.592,1994:14.940,1995:15.599,1996:16.239,1997:16.946,
+  1998:17.772,1999:18.240,2000:18.303,2001:18.486,2002:18.828,2003:19.447,2004:20.544,
+  2005:21.942,2006:22.905,2007:23.834,2008:25.308,2009:26.477,2010:27.156,2011:28.704,
+  2012:30.928,2013:33.834,2014:37.312,2015:39.185,2016:39.013,2017:38.525,2018:38.433,
+  2019:38.666,2020:38.844,2021:40.679,2022:45.604,2023:48.050,2024:48.814,2025:50.175
+};
+for (const y of investYears) { deprecValues.push(deprecRaw[y]); }
+
+// E/C Ratio
+const ecRatio = investValues.map((v,i) => +(v / deprecValues[i]).toFixed(3));
+
+// Net investment and cumulative
+const netInvest = investValues.map((v,i) => +(v - deprecValues[i]).toFixed(2));
+const cumulativeNet = [];
+let runningSum = 0;
+for (const n of netInvest) { runningSum += n; cumulativeNet.push(+runningSum.toFixed(1)); }
+
+// Net capital stock (Q4 values, billions)
+const stockYears = [];
+const stockValues = [];
+const stockRaw = {
+  1970:28.826,1971:30.608,1972:32.371,1973:37.214,1974:47.172,1975:54.057,1976:60.596,
+  1977:67.754,1978:76.196,1979:89.637,1980:99.354,1981:109.757,1982:111.913,1983:109.260,
+  1984:106.585,1985:102.215,1986:99.660,1987:96.075,1988:96.571,1989:98.649,1990:101.722,
+  1991:102.678,1992:101.307,1993:102.506,1994:105.725,1995:110.585,1996:114.273,1997:120.190,
+  1998:125.845,1999:126.080,2000:126.791,2001:128.977,2002:133.036,2003:138.879,2004:149.409,
+  2005:157.361,2006:163.865,2007:171.210,2008:184.471,2009:189.644,2010:196.077,2011:208.802,
+  2012:226.601,2013:249.859,2014:272.803,2015:275.636,2016:270.425,2017:267.876,2018:269.576,
+  2019:270.424,2020:273.209,2021:303.372,2022:334.981,2023:341.341,2024:346.207,2025:358.769
+};
+for (const [y,v] of Object.entries(stockRaw)) { stockYears.push(+y); stockValues.push(v); }
+
+// Price index (2017=100)
+const priceYears = [];
+const priceValues = [];
+const priceRaw = {
+  1970:15.288,1971:15.983,1972:16.718,1973:17.228,1974:19.549,1975:22.944,1976:24.810,
+  1977:26.815,1978:28.992,1979:31.918,1980:36.530,1981:41.038,1982:44.898,1983:46.844,
+  1984:48.044,1985:48.221,1986:50.010,1987:51.051,1988:52.572,1989:54.752,1990:56.721,
+  1991:59.077,1992:61.517,1993:62.877,1994:64.540,1995:65.989,1996:67.495,1997:68.133,
+  1998:68.788,1999:69.966,2000:70.434,2001:71.164,2002:72.047,2003:73.290,2004:75.657,
+  2005:78.807,2006:80.842,2007:83.377,2008:88.023,2009:91.069,2010:91.894,2011:94.573,
+  2012:96.228,2013:96.904,2014:98.389,2015:98.830,2016:99.149,2017:100.000,2018:101.338,
+  2019:102.956,2020:103.637,2021:108.594,2022:121.083,2023:125.870,2024:126.487,2025:129.483
+};
+for (const [y,v] of Object.entries(priceRaw)) { priceYears.push(+y); priceValues.push(v); }
+
+// Real investment (2017 dollars, billions)
+const realInvYears = [2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
+const realInvValues = [27.775,30.552,30.543,28.195,30.632,40.926,47.979,48.745,37.281,29.349,28.745,31.091,34.715,33.409,39.299,39.614,31.724,32.479,28.170];
+
+// Census data
+const censusYears = [2002, 2007, 2012, 2017, 2022];
+const fleetLt40   = [1415807, 1280039, 1107528, 995918, 904843];
+const fleetMid    = [2066720, 1998508, 1886032, 1795589, 1627056];
+const fleetGt100  = [1110018, 1111265, 1184740, 1246592, 1252844];
+const fleetTotal  = [4592545, 4389812, 4178300, 4038099, 3784743];
+
+const under5Total = [435218, 530102, 494548, 470722, 440828];
+
+const combineTotal = [409442, 346935, 346632, 323347, 298301];
+const combineUnder5 = [41314, 41420, 58301, 45771, 39455];
+const balerTotal   = [766457, 727501, 731771, 662339, 564948];
+
+const censusMachValue = [136.6, 194.8, 244.0, 272.3, 312.1]; // billions
+const censusMachPerOp = [66570, 88357, 115706, 133363, 164212]; // dollars
+
+// AEM sales data (2019-2024)
+const aemYears = [2019, 2020, 2021, 2022, 2023, 2024];
+const aemLt40    = [150000, 177000, 193000, 173671, 156070, 134911];
+const aemMid     = [65000,  73000,  77000,  67346,  61881,  55067];
+const aemGt100   = [24000,  25000,  31000,  26422,  27750,  22864]; // 2WD only
+const aem4WD     = [3200,   3300,   3900,   3469,   4564,   4358];
+const aemTotal   = [244637, 288000, 317897, 270908, 250265, 217200];
+const aemCombines= [5000,   5300,   6272,   7267,   7369,   5564];
+
+// Implied replacement cycles using 2022 Census stock
+const stock2022 = { lt40: 904843, mid: 1627056, gt100: 1252844, combines: 298301 };
+const replCycleLt40  = aemLt40.map(s => +(stock2022.lt40 / s).toFixed(1));
+const replCycleMid   = aemMid.map(s => +(stock2022.mid / s).toFixed(1));
+const replCycleGt100 = aemYears.map((_,i) => +((stock2022.gt100) / (aemGt100[i] + aem4WD[i])).toFixed(1));
+const replCycleCombines = aemCombines.map(s => +(stock2022.combines / s).toFixed(1));
+
+// Trade data
+const tradeYears = [2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
+const tradeImports = [3.476,2.520,3.237,3.264,4.914,5.817,6.344,4.046,5.260,4.388,5.379,7.069,7.945,8.768,11.124,12.206,8.220,9.276,12.616,13.418,9.986,13.132,18.658,19.599,15.627]; // billions
+const tradeExports = [2.607,1.976,2.385,2.713,3.397,4.059,4.654,4.861,5.889,3.711,4.493,6.578,8.112,6.205,6.074,5.077,3.973,4.629,5.843,6.018,3.971,5.281,6.301,7.925,6.687];
+const tradeBalance = tradeImports.map((imp,i) => +(tradeExports[i] - imp).toFixed(3));
+
+// ==============================
+// CHART DEFAULTS
+// ==============================
+Chart.defaults.font.family = "-apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif";
+Chart.defaults.font.size = 12;
+Chart.defaults.color = '#64748b';
+Chart.defaults.plugins.legend.labels.usePointStyle = true;
+Chart.defaults.plugins.legend.labels.pointStyleWidth = 12;
+Chart.defaults.elements.line.tension = 0.25;
+
+const COL = {
+  blue: '#2563eb', lightblue: '#60a5fa', green: '#16a34a', lightgreen: '#86efac',
+  red: '#dc2626', lightred: '#fca5a5', orange: '#f59e0b', lightorange: '#fde68a',
+  purple: '#7c3aed', gray: '#94a3b8', darkblue: '#1e3a5f', teal: '#0d9488'
+};
+
+// ==============================
+// CHART 1: Investment vs Depreciation
+// ==============================
+new Chart(document.getElementById('investVsDeprecChart'), {
+  type: 'line',
+  data: {
+    labels: investYears,
+    datasets: [
+      { label: 'Gross Investment', data: investValues, borderColor: COL.green, backgroundColor: COL.green+'20', fill: false, borderWidth: 2.5, pointRadius: 0, pointHitRadius: 8 },
+      { label: 'Depreciation (Capital Consumption)', data: deprecValues, borderColor: COL.red, backgroundColor: COL.red+'20', fill: false, borderWidth: 2.5, pointRadius: 0, pointHitRadius: 8, borderDash: [6,3] }
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(1) + 'B' } },
+      annotation: {
+        annotations: {
+          farmCrisis: { type:'box', xMin:'1982', xMax:'1987', backgroundColor:'rgba(220,38,38,0.06)', borderWidth:0, label:{ display:true, content:'Farm Crisis', position:'start', font:{size:10}, color:'#dc262680' }},
+          boom2012: { type:'box', xMin:'2012', xMax:'2014', backgroundColor:'rgba(22,163,74,0.06)', borderWidth:0, label:{ display:true, content:'Commodity Boom', position:'start', font:{size:10}, color:'#16a34a80' }},
+          current: { type:'box', xMin:'2023', xMax:'2025', backgroundColor:'rgba(220,38,38,0.06)', borderWidth:0, label:{ display:true, content:'Current Downturn', position:'start', font:{size:10}, color:'#dc262680' }}
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Billions USD (nominal)' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 2: E/C Ratio
+// ==============================
+new Chart(document.getElementById('ecRatioChart'), {
+  type: 'line',
+  data: {
+    labels: investYears,
+    datasets: [{
+      label: 'Investment / Depreciation',
+      data: ecRatio,
+      borderColor: COL.blue,
+      backgroundColor: function(ctx) {
+        const val = ctx.raw;
+        return val >= 1.0 ? COL.green+'40' : COL.red+'40';
+      },
+      fill: true,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => 'Ratio: ' + ctx.parsed.y.toFixed(2) + 'x' } },
+      annotation: {
+        annotations: {
+          threshold: { type: 'line', yMin: 1.0, yMax: 1.0, borderColor: '#ef4444', borderWidth: 2, borderDash: [6,4], label: { display: true, content: 'Breakeven (1.0x)', position: 'start', backgroundColor: '#ef444420', color: '#ef4444', font: {size: 11} } }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Ratio' }, min: 0.3, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 3: Cumulative Net Investment
+// ==============================
+new Chart(document.getElementById('cumulativeNetChart'), {
+  type: 'line',
+  data: {
+    labels: investYears,
+    datasets: [{
+      label: 'Cumulative Net Investment (since 1970)',
+      data: cumulativeNet,
+      borderColor: COL.darkblue,
+      backgroundColor: cumulativeNet.map(v => v >= 0 ? COL.green+'30' : COL.red+'30'),
+      fill: true,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 8,
+      segment: {
+        borderColor: ctx => {
+          const yVal = ctx.p1.parsed.y;
+          return yVal >= 0 ? COL.green : COL.red;
+        }
+      }
+    }]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => 'Cumulative: $' + ctx.parsed.y.toFixed(1) + 'B' } },
+      annotation: {
+        annotations: {
+          zero: { type: 'line', yMin: 0, yMax: 0, borderColor: '#94a3b8', borderWidth: 1, borderDash: [4,4] }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Cumulative $ Billions' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 4: Fleet by HP Class
+// ==============================
+new Chart(document.getElementById('fleetByHPChart'), {
+  type: 'bar',
+  data: {
+    labels: censusYears,
+    datasets: [
+      { label: '100+ HP', data: fleetGt100.map(v => v/1e6), backgroundColor: COL.red, borderRadius: 2 },
+      { label: '40-99 HP', data: fleetMid.map(v => v/1e6), backgroundColor: COL.orange, borderRadius: 2 },
+      { label: 'Under 40 HP', data: fleetLt40.map(v => v/1e6), backgroundColor: COL.lightblue, borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 1e6).toLocaleString() + ' units' } }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, title: { display: true, text: 'Millions of Tractors' }, grid: { color: '#f1f5f9' } }
+    }
+  }
+});
+
+// ==============================
+// CHART 5: Other Equipment
+// ==============================
+new Chart(document.getElementById('otherEquipChart'), {
+  type: 'bar',
+  data: {
+    labels: censusYears,
+    datasets: [
+      { label: 'Combines', data: combineTotal.map(v => v/1000), backgroundColor: COL.teal, borderRadius: 2 },
+      { label: 'Balers', data: balerTotal.map(v => v/1000), backgroundColor: COL.purple, borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 1000).toLocaleString() + ' units' } }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { title: { display: true, text: 'Thousands of Units' }, grid: { color: '#f1f5f9' } }
+    }
+  }
+});
+
+// ==============================
+// CHART 6: Age Share
+// ==============================
+const pctUnder5 = under5Total.map((v,i) => +(v / fleetTotal[i] * 100).toFixed(1));
+const pctCombineUnder5 = combineUnder5.map((v,i) => +(v / combineTotal[i] * 100).toFixed(1));
+new Chart(document.getElementById('ageShareChart'), {
+  type: 'bar',
+  data: {
+    labels: censusYears,
+    datasets: [
+      { label: 'Tractors (all HP)', data: pctUnder5, backgroundColor: COL.blue, borderRadius: 2 },
+      { label: 'Combines', data: pctCombineUnder5, backgroundColor: COL.teal, borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + '%' } },
+      annotation: {
+        annotations: {
+          target: { type: 'line', yMin: 33.3, yMax: 33.3, borderColor: COL.green, borderWidth: 1.5, borderDash: [6,4], label: { display: true, content: 'Healthy turnover (33% if 15-yr life)', position: 'start', backgroundColor: '#16a34a20', color: COL.green, font: {size: 10} } }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { title: { display: true, text: '% of Fleet Under 5 Years Old' }, max: 40, grid: { color: '#f1f5f9' } }
+    }
+  }
+});
+
+// ==============================
+// CHART 7: Implied Replacement Cycle (snapshot)
+// ==============================
+new Chart(document.getElementById('replacementCycleChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Under 40 HP', '40-100 HP', '100+ HP\n(2WD+4WD)', 'Combines'],
+    datasets: [
+      { label: '2021 (Boom)', data: [
+        +(stock2022.lt40/aemLt40[2]).toFixed(1),
+        +(stock2022.mid/aemMid[2]).toFixed(1),
+        +(stock2022.gt100/(aemGt100[2]+aem4WD[2])).toFixed(1),
+        +(stock2022.combines/aemCombines[2]).toFixed(1)
+      ], backgroundColor: COL.green+'90', borderRadius: 2 },
+      { label: '2022', data: [
+        +(stock2022.lt40/aemLt40[3]).toFixed(1),
+        +(stock2022.mid/aemMid[3]).toFixed(1),
+        +(stock2022.gt100/(aemGt100[3]+aem4WD[3])).toFixed(1),
+        +(stock2022.combines/aemCombines[3]).toFixed(1)
+      ], backgroundColor: COL.orange+'90', borderRadius: 2 },
+      { label: '2024 (Downturn)', data: [
+        +(stock2022.lt40/aemLt40[5]).toFixed(1),
+        +(stock2022.mid/aemMid[5]).toFixed(1),
+        +(stock2022.gt100/(aemGt100[5]+aem4WD[5])).toFixed(1),
+        +(stock2022.combines/aemCombines[5]).toFixed(1)
+      ], backgroundColor: COL.red+'90', borderRadius: 2 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' years' } },
+      annotation: {
+        annotations: {
+          target: { type: 'line', yMin: 15, yMax: 15, borderColor: COL.red, borderWidth: 2, borderDash: [8,4], label: { display: true, content: '15-yr recommended life', position: 'end', backgroundColor: '#dc262620', color: COL.red, font: {size: 11, weight: 'bold'} } }
+        }
+      }
+    },
+    scales: {
+      x: { grid: { display: false } },
+      y: { title: { display: true, text: 'Years to Replace Entire Fleet' }, max: 60, grid: { color: '#f1f5f9' } }
+    }
+  }
+});
+
+// ==============================
+// CHART 8: Replacement Cycle Over Time (by HP)
+// ==============================
+new Chart(document.getElementById('replacementCycleTimeChart'), {
+  type: 'line',
+  data: {
+    labels: aemYears,
+    datasets: [
+      { label: '100+ HP (2WD+4WD)', data: replCycleGt100, borderColor: COL.red, backgroundColor: COL.red+'15', fill: false, borderWidth: 2.5, pointRadius: 4 },
+      { label: 'Combines', data: replCycleCombines, borderColor: COL.teal, backgroundColor: COL.teal+'15', fill: false, borderWidth: 2.5, pointRadius: 4 },
+      { label: '40-100 HP', data: replCycleMid, borderColor: COL.orange, backgroundColor: COL.orange+'15', fill: false, borderWidth: 2.5, pointRadius: 4 },
+      { label: 'Under 40 HP', data: replCycleLt40, borderColor: COL.lightblue, backgroundColor: COL.lightblue+'15', fill: false, borderWidth: 2, pointRadius: 4, borderDash: [4,3] }
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + ctx.parsed.y + ' years' } },
+      annotation: {
+        annotations: {
+          target: { type: 'line', yMin: 15, yMax: 15, borderColor: COL.red, borderWidth: 2, borderDash: [8,4], label: { display: true, content: '15-yr recommended life', position: 'end', backgroundColor: '#dc262620', color: COL.red, font: {size: 11} } }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Years to Replace Fleet' }, min: 0, max: 65, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 9: Net Capital Stock
+// ==============================
+new Chart(document.getElementById('netStockChart'), {
+  type: 'line',
+  data: {
+    labels: stockYears,
+    datasets: [{
+      label: 'Net Capital Stock (Current Cost)',
+      data: stockValues,
+      borderColor: COL.darkblue,
+      backgroundColor: COL.darkblue+'15',
+      fill: true,
+      borderWidth: 2.5,
+      pointRadius: 0,
+      pointHitRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(1) + 'B' } }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Billions USD' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 10: Price Index
+// ==============================
+new Chart(document.getElementById('priceIndexChart'), {
+  type: 'line',
+  data: {
+    labels: priceYears,
+    datasets: [{
+      label: 'Ag Machinery Price Index',
+      data: priceValues,
+      borderColor: COL.purple,
+      backgroundColor: COL.purple+'15',
+      fill: true,
+      borderWidth: 2,
+      pointRadius: 0,
+      pointHitRadius: 8
+    }]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => 'Index: ' + ctx.parsed.y.toFixed(1) + ' (2017=100)' } },
+      annotation: {
+        annotations: {
+          base: { type: 'line', yMin: 100, yMax: 100, borderColor: '#94a3b8', borderWidth: 1, borderDash: [4,4], label: { display: true, content: '2017 = 100', position: 'end', color: '#94a3b8', font: {size: 10} } }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Price Index (2017 = 100)' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 11: Real Investment
+// ==============================
+new Chart(document.getElementById('realInvestChart'), {
+  type: 'bar',
+  data: {
+    labels: realInvYears,
+    datasets: [{
+      label: 'Real Investment (2017$)',
+      data: realInvValues,
+      backgroundColor: realInvValues.map(v => v >= 35 ? COL.green+'80' : v >= 30 ? COL.orange+'80' : COL.red+'80'),
+      borderRadius: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => '$' + ctx.parsed.y.toFixed(1) + 'B (2017$)' } },
+      annotation: {
+        annotations: {
+          peak: { type: 'line', yMin: 48.745, yMax: 48.745, borderColor: '#94a3b8', borderWidth: 1, borderDash: [4,4], label: { display: true, content: '2014 peak: $48.7B', position: 'start', color: '#94a3b8', font: {size: 10} } }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Billions (2017 USD)' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 12: Census Machinery Value
+// ==============================
+new Chart(document.getElementById('censusMachValueChart'), {
+  type: 'bar',
+  data: {
+    labels: censusYears,
+    datasets: [
+      { label: 'Total Machinery Value', data: censusMachValue, backgroundColor: COL.darkblue+'90', borderRadius: 3, yAxisID: 'y' },
+      { label: 'Avg Per Operation', data: censusMachPerOp.map(v => v/1000), borderColor: COL.orange, backgroundColor: COL.orange, type: 'line', borderWidth: 2.5, pointRadius: 5, yAxisID: 'y1' }
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => {
+        if (ctx.datasetIndex === 0) return '$' + ctx.parsed.y.toFixed(1) + 'B total';
+        return '$' + (ctx.parsed.y * 1000).toLocaleString() + ' per farm';
+      }}}
+    },
+    scales: {
+      y: { title: { display: true, text: 'Total ($B)' }, position: 'left', grid: { color: '#f1f5f9' } },
+      y1: { title: { display: true, text: 'Avg Per Farm ($K)' }, position: 'right', grid: { display: false } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 13: Trade Flows
+// ==============================
+new Chart(document.getElementById('tradeFlowChart'), {
+  type: 'line',
+  data: {
+    labels: tradeYears,
+    datasets: [
+      { label: 'Imports', data: tradeImports, borderColor: COL.red, backgroundColor: COL.red+'15', fill: false, borderWidth: 2.5, pointRadius: 0, pointHitRadius: 8 },
+      { label: 'Exports', data: tradeExports, borderColor: COL.green, backgroundColor: COL.green+'15', fill: false, borderWidth: 2.5, pointRadius: 0, pointHitRadius: 8 }
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': $' + ctx.parsed.y.toFixed(1) + 'B' } }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Billions USD' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 14: Trade Balance
+// ==============================
+new Chart(document.getElementById('tradeBalanceChart'), {
+  type: 'bar',
+  data: {
+    labels: tradeYears,
+    datasets: [{
+      label: 'Trade Balance (Exports - Imports)',
+      data: tradeBalance,
+      backgroundColor: tradeBalance.map(v => v >= 0 ? COL.green+'80' : COL.red+'80'),
+      borderRadius: 2
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => (ctx.parsed.y >= 0 ? 'Surplus' : 'Deficit') + ': $' + Math.abs(ctx.parsed.y).toFixed(1) + 'B' } },
+      annotation: {
+        annotations: {
+          zero: { type: 'line', yMin: 0, yMax: 0, borderColor: '#94a3b8', borderWidth: 1 }
+        }
+      }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Billions USD' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// ==============================
+// CHART 15: AEM Sales
+// ==============================
+new Chart(document.getElementById('aemSalesChart'), {
+  type: 'bar',
+  data: {
+    labels: aemYears,
+    datasets: [
+      { label: '100+ HP (2WD)', data: aemGt100.map(v=>v/1000), backgroundColor: COL.red+'90', borderRadius: 1 },
+      { label: '4WD', data: aem4WD.map(v=>v/1000), backgroundColor: '#991b1b90', borderRadius: 1 },
+      { label: '40-100 HP', data: aemMid.map(v=>v/1000), backgroundColor: COL.orange+'90', borderRadius: 1 },
+      { label: 'Under 40 HP', data: aemLt40.map(v=>v/1000), backgroundColor: COL.lightblue+'90', borderRadius: 1 }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.dataset.label + ': ' + (ctx.parsed.y * 1000).toLocaleString() + ' units' } }
+    },
+    scales: {
+      x: { stacked: true, grid: { display: false } },
+      y: { stacked: true, title: { display: true, text: 'Thousands of Units' }, grid: { color: '#f1f5f9' } }
+    }
+  }
+});
+
+// ==============================
+// CHART 16: AEM Combine Sales
+// ==============================
+new Chart(document.getElementById('aemCombineChart'), {
+  type: 'bar',
+  data: {
+    labels: aemYears,
+    datasets: [{
+      label: 'Combine Sales',
+      data: aemCombines,
+      backgroundColor: aemCombines.map(v => v >= 6000 ? COL.green+'80' : v >= 5500 ? COL.orange+'80' : COL.red+'80'),
+      borderRadius: 3
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      tooltip: { callbacks: { label: ctx => ctx.parsed.y.toLocaleString() + ' units' } }
+    },
+    scales: {
+      y: { title: { display: true, text: 'Units' }, grid: { color: '#f1f5f9' } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+</script>
+</body>
+</html>

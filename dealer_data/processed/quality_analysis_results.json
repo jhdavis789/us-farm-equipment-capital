@@ -1,0 +1,2646 @@
+{
+  "coverage": {
+    "brand_counts": {
+      "John Deere": 4374,
+      "Massey Ferguson": 1588,
+      "Fendt": 1451,
+      "Case IH": 1366,
+      "CLAAS": 1341,
+      "New Holland": 1236,
+      "Valtra": 928,
+      "McCormick": 747,
+      "Landini": 568,
+      "SAME": 394,
+      "Deutz-Fahr": 346,
+      "STEYR": 144,
+      "Lamborghini Tractors": 55
+    },
+    "parent_counts": {
+      "Deere & Company": 4374,
+      "AGCO": 3967,
+      "CNH Industrial": 2746,
+      "CLAAS": 1341,
+      "Argo Tractors": 1315,
+      "SDF Group": 795
+    },
+    "country_counts": {
+      "US": 3980,
+      "DE": 2374,
+      "FR": 1794,
+      "IT": 559,
+      "ES": 554,
+      "GB": 546,
+      "AT": 481,
+      "NO": 352,
+      "TR": 323,
+      "CH": 307,
+      "PL": 296,
+      "NL": 294,
+      "BE": 281,
+      "SE": 276,
+      "FI": 218,
+      "PT": 204,
+      "CA": 144,
+      "CZ": 143,
+      "DK": 142,
+      "UA": 137,
+      "ZA": 132,
+      "IE": 128,
+      "RO": 101,
+      "HU": 77,
+      "AU": 74,
+      "INTL": 70,
+      "BR": 57,
+      "BG": 53,
+      "SK": 51,
+      "EE": 42,
+      "LT": 41,
+      "LV": 39,
+      "MX": 21,
+      "HR": 20,
+      "NZ": 20,
+      "GR": 18,
+      "SI": 18,
+      "RS": 16,
+      "AR": 15,
+      "JP": 15,
+      "EU": 13,
+      "IS": 12,
+      "LU": 11,
+      "LA": 9,
+      "MD": 8,
+      "MY": 5,
+      "BW": 3,
+      "MZ": 3,
+      "ZW": 3,
+      "EA": 3,
+      "IL": 3,
+      "BA": 3,
+      "CL": 2,
+      "KE": 2,
+      "PH": 2,
+      "SA": 2,
+      "TH": 2,
+      "UG": 2,
+      "FE": 2,
+      "GE": 2,
+      "": 2,
+      "MT": 2,
+      "LI": 2,
+      "JO": 2,
+      "AE": 2,
+      "BH": 2,
+      "BO": 1,
+      "EC": 1,
+      "HN": 1,
+      "NA": 1,
+      "NG": 1,
+      "ZM": 1,
+      "CO": 1,
+      "TZ": 1,
+      "CR": 1,
+      "DZ": 1,
+      "SG": 1,
+      "LB": 1,
+      "GG": 1,
+      "JE": 1,
+      "IQ": 1,
+      "QA": 1,
+      "OM": 1,
+      "AZ": 1,
+      "CY": 1,
+      "AL": 1,
+      "MK": 1
+    },
+    "brand_country_matrix": {
+      "CLAAS": {
+        "US": 216,
+        "DE": 296,
+        "FR": 231,
+        "IT": 34,
+        "GB": 68,
+        "ES": 28,
+        "AT": 45,
+        "PL": 45,
+        "NL": 41,
+        "SE": 23,
+        "NO": 39,
+        "FI": 26,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 2,
+        "CZ": 14,
+        "RO": 19,
+        "HU": 19,
+        "BG": 5,
+        "GR": 1
+      },
+      "Case IH": {
+        "US": 682,
+        "DE": 158,
+        "FR": 142,
+        "IT": 17,
+        "GB": 34,
+        "ES": 49,
+        "AT": 8,
+        "PL": 35,
+        "NL": 43,
+        "SE": 10,
+        "NO": 26,
+        "FI": 29,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 0,
+        "CZ": 6,
+        "RO": 13,
+        "HU": 6,
+        "BG": 8,
+        "GR": 4
+      },
+      "Deutz-Fahr": {
+        "US": 0,
+        "DE": 79,
+        "FR": 51,
+        "IT": 103,
+        "GB": 3,
+        "ES": 68,
+        "AT": 0,
+        "PL": 20,
+        "NL": 2,
+        "SE": 0,
+        "NO": 0,
+        "FI": 0,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 0,
+        "CZ": 0,
+        "RO": 7,
+        "HU": 0,
+        "BG": 0,
+        "GR": 0
+      },
+      "Fendt": {
+        "US": 147,
+        "DE": 386,
+        "FR": 191,
+        "IT": 37,
+        "GB": 70,
+        "ES": 56,
+        "AT": 63,
+        "PL": 25,
+        "NL": 45,
+        "SE": 37,
+        "NO": 48,
+        "FI": 69,
+        "CA": 55,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 6,
+        "CZ": 8,
+        "RO": 19,
+        "HU": 6,
+        "BG": 7,
+        "GR": 1
+      },
+      "John Deere": {
+        "US": 1893,
+        "DE": 603,
+        "FR": 444,
+        "IT": 118,
+        "GB": 139,
+        "ES": 124,
+        "AT": 123,
+        "PL": 65,
+        "NL": 42,
+        "SE": 91,
+        "NO": 135,
+        "FI": 59,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 0,
+        "CZ": 53,
+        "RO": 24,
+        "HU": 29,
+        "BG": 14,
+        "GR": 3
+      },
+      "Lamborghini Tractors": {
+        "US": 0,
+        "DE": 0,
+        "FR": 8,
+        "IT": 1,
+        "GB": 0,
+        "ES": 2,
+        "AT": 0,
+        "PL": 0,
+        "NL": 0,
+        "SE": 0,
+        "NO": 0,
+        "FI": 0,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 0,
+        "CZ": 0,
+        "RO": 0,
+        "HU": 1,
+        "BG": 5,
+        "GR": 2
+      },
+      "Landini": {
+        "US": 0,
+        "DE": 31,
+        "FR": 57,
+        "IT": 62,
+        "GB": 10,
+        "ES": 50,
+        "AT": 0,
+        "PL": 11,
+        "NL": 0,
+        "SE": 1,
+        "NO": 1,
+        "FI": 0,
+        "CA": 0,
+        "AU": 37,
+        "ZA": 63,
+        "TR": 53,
+        "CZ": 0,
+        "RO": 1,
+        "HU": 1,
+        "BG": 1,
+        "GR": 1
+      },
+      "Massey Ferguson": {
+        "US": 206,
+        "DE": 331,
+        "FR": 228,
+        "IT": 43,
+        "GB": 78,
+        "ES": 47,
+        "AT": 42,
+        "PL": 21,
+        "NL": 38,
+        "SE": 51,
+        "NO": 50,
+        "FI": 23,
+        "CA": 88,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 111,
+        "CZ": 15,
+        "RO": 10,
+        "HU": 12,
+        "BG": 7,
+        "GR": 2
+      },
+      "McCormick": {
+        "US": 176,
+        "DE": 108,
+        "FR": 89,
+        "IT": 45,
+        "GB": 35,
+        "ES": 44,
+        "AT": 1,
+        "PL": 14,
+        "NL": 0,
+        "SE": 1,
+        "NO": 1,
+        "FI": 0,
+        "CA": 0,
+        "AU": 37,
+        "ZA": 63,
+        "TR": 25,
+        "CZ": 4,
+        "RO": 1,
+        "HU": 1,
+        "BG": 1,
+        "GR": 1
+      },
+      "New Holland": {
+        "US": 659,
+        "DE": 95,
+        "FR": 90,
+        "IT": 24,
+        "GB": 25,
+        "ES": 31,
+        "AT": 41,
+        "PL": 32,
+        "NL": 57,
+        "SE": 8,
+        "NO": 19,
+        "FI": 12,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 0,
+        "CZ": 6,
+        "RO": 6,
+        "HU": 1,
+        "BG": 0,
+        "GR": 2
+      },
+      "SAME": {
+        "US": 0,
+        "DE": 38,
+        "FR": 72,
+        "IT": 37,
+        "GB": 23,
+        "ES": 12,
+        "AT": 1,
+        "PL": 0,
+        "NL": 0,
+        "SE": 0,
+        "NO": 0,
+        "FI": 0,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 6,
+        "TR": 125,
+        "CZ": 0,
+        "RO": 0,
+        "HU": 0,
+        "BG": 0,
+        "GR": 0
+      },
+      "STEYR": {
+        "US": 0,
+        "DE": 0,
+        "FR": 0,
+        "IT": 0,
+        "GB": 0,
+        "ES": 0,
+        "AT": 101,
+        "PL": 0,
+        "NL": 0,
+        "SE": 0,
+        "NO": 0,
+        "FI": 0,
+        "CA": 0,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 0,
+        "CZ": 13,
+        "RO": 0,
+        "HU": 0,
+        "BG": 4,
+        "GR": 0
+      },
+      "Valtra": {
+        "US": 1,
+        "DE": 249,
+        "FR": 191,
+        "IT": 38,
+        "GB": 61,
+        "ES": 43,
+        "AT": 56,
+        "PL": 28,
+        "NL": 26,
+        "SE": 54,
+        "NO": 33,
+        "FI": 0,
+        "CA": 1,
+        "AU": 0,
+        "ZA": 0,
+        "TR": 1,
+        "CZ": 24,
+        "RO": 1,
+        "HU": 1,
+        "BG": 1,
+        "GR": 1
+      }
+    },
+    "missing_brands": [
+      "Kubota"
+    ],
+    "eastern_eu_coverage": {
+      "RO (Romania)": 101,
+      "HU (Hungary)": 77,
+      "GR (Greece)": 18,
+      "BG (Bulgaria)": 53,
+      "HR (Croatia)": 20,
+      "RS (Serbia)": 16,
+      "LT (Lithuania)": 41,
+      "LV (Latvia)": 39,
+      "EE (Estonia)": 42,
+      "SI (Slovenia)": 18,
+      "SK (Slovakia)": 51
+    },
+    "us_brand_counts": {
+      "John Deere": 1893,
+      "Case IH": 682,
+      "New Holland": 659,
+      "CLAAS": 216,
+      "Massey Ferguson": 206,
+      "McCormick": 176,
+      "Fendt": 147,
+      "Valtra": 1
+    }
+  },
+  "coordinates": {
+    "missing_count": 7,
+    "zero_count": 1,
+    "out_of_bounds_count": 70,
+    "out_of_bounds": [
+      {
+        "row": 1360,
+        "brand": "John Deere",
+        "dealer_name": "Pape Machinery, Inc.",
+        "country": "US",
+        "city": "Hilo",
+        "lat": 19.7259,
+        "lng": -155.054,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 1361,
+        "brand": "John Deere",
+        "dealer_name": "Pape Machinery, Inc.",
+        "country": "US",
+        "city": "Kailua Kona",
+        "lat": 19.662368,
+        "lng": -156.008374,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 1362,
+        "brand": "John Deere",
+        "dealer_name": "Pape Machinery, Inc.",
+        "country": "US",
+        "city": "Wailuku",
+        "lat": 20.8801,
+        "lng": -156.499,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 1363,
+        "brand": "John Deere",
+        "dealer_name": "Pape Machinery, Inc.",
+        "country": "US",
+        "city": "ELEELE",
+        "lat": 21.900583,
+        "lng": -159.58637,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 1365,
+        "brand": "John Deere",
+        "dealer_name": "Ernie Le Feuvre Ltd",
+        "country": "GB",
+        "city": "St John",
+        "lat": 49.225809,
+        "lng": -2.110906,
+        "expected_lat": [
+          49.5,
+          61.0
+        ],
+        "expected_lng": [
+          -8.5,
+          2.0
+        ]
+      },
+      {
+        "row": 2426,
+        "brand": "John Deere",
+        "dealer_name": "Ab Lantbruk \u00c5land",
+        "country": "FI",
+        "city": "Mariehamn",
+        "lat": 60.1093,
+        "lng": 19.9116,
+        "expected_lat": [
+          59.7,
+          70.1
+        ],
+        "expected_lng": [
+          20.5,
+          31.6
+        ]
+      },
+      {
+        "row": 4329,
+        "brand": "John Deere",
+        "dealer_name": "Ab Lantbruk",
+        "country": "FI",
+        "city": "Mariehamn",
+        "lat": 60.109405,
+        "lng": 19.911345,
+        "expected_lat": [
+          59.7,
+          70.1
+        ],
+        "expected_lng": [
+          20.5,
+          31.6
+        ]
+      },
+      {
+        "row": 5717,
+        "brand": "Landini",
+        "dealer_name": "BYC International",
+        "country": "AR",
+        "city": "Panam\u00e1",
+        "lat": 9.0458577,
+        "lng": -79.4666325,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5718,
+        "brand": "Landini",
+        "dealer_name": "DERCO Per\u00f9 S.A.",
+        "country": "AR",
+        "city": "Rep\u00fablica del Per\u00fa",
+        "lat": -12.0509044,
+        "lng": -76.9447868,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5719,
+        "brand": "Landini",
+        "dealer_name": "DISTRIBUIDORA AGRICOLA LANDINI C.A",
+        "country": "AR",
+        "city": "Via La Colonia - Zona Industri Estado Portuguesa - Pa\u00eds VENEZ",
+        "lat": 9.094399899999999,
+        "lng": -69.097023,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5720,
+        "brand": "Landini",
+        "dealer_name": "EURONOVA",
+        "country": "AR",
+        "city": "Rep. Dominicana",
+        "lat": 18.483642,
+        "lng": -69.9625952,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5721,
+        "brand": "Landini",
+        "dealer_name": "FORMUNICA S.A.",
+        "country": "AR",
+        "city": "Rep\u00fablica de Nicaragua",
+        "lat": 12.141911,
+        "lng": -86.2811569,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5723,
+        "brand": "Landini",
+        "dealer_name": "MEINDERTSMA",
+        "country": "AR",
+        "city": "Republiek Suriname",
+        "lat": 5.8005937,
+        "lng": -55.1770775,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5724,
+        "brand": "Landini",
+        "dealer_name": "Monta\u00f1o & Gutierrez S.A.S",
+        "country": "AR",
+        "city": "Rep\u00fablica de Colombia",
+        "lat": 4.6224949,
+        "lng": -74.089564,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5725,
+        "brand": "Landini",
+        "dealer_name": "Tecnoagr\u00edcola de Centroam\u00e9rica, S.A.",
+        "country": "AR",
+        "city": "Rep\u00fablica de Costa Rica",
+        "lat": 9.9875564,
+        "lng": -84.1653265,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5726,
+        "brand": "Landini",
+        "dealer_name": "Tractores McCormick de Centro Am\u00e9rica",
+        "country": "AR",
+        "city": "Guatemala \u2013 Salvador",
+        "lat": 14.4605359,
+        "lng": -90.6425297,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5727,
+        "brand": "Landini",
+        "dealer_name": "Vision Equipment Supply",
+        "country": "AR",
+        "city": "Barbados \u2013 Caribbean Island",
+        "lat": 13.1363332,
+        "lng": -59.4675191,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 5829,
+        "brand": "Landini",
+        "dealer_name": "Ali Kfz & Landmaschinen",
+        "country": "DE",
+        "city": "Nieder\u00f6sterreich",
+        "lat": 48.4733395,
+        "lng": 15.7349108,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 5833,
+        "brand": "Landini",
+        "dealer_name": "Eibl und Wondrak GmbH",
+        "country": "DE",
+        "city": "Nieder\u00f6sterreich",
+        "lat": 48.2782135,
+        "lng": 16.474421,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 5835,
+        "brand": "Landini",
+        "dealer_name": "Franz Gady GmbH",
+        "country": "DE",
+        "city": "Lebring-Sankt Margarethen",
+        "lat": 46.846386,
+        "lng": 15.537908,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 5839,
+        "brand": "Landini",
+        "dealer_name": "Ing. Alois R\u00f6ssl e.U.",
+        "country": "DE",
+        "city": "Nieder\u00f6sterreich",
+        "lat": 48.3736612,
+        "lng": 15.5508856,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 5841,
+        "brand": "Landini",
+        "dealer_name": "Lavanttaler Allradcenter Pautlisch GmbH",
+        "country": "DE",
+        "city": "Wolfsberg",
+        "lat": 46.78717522493047,
+        "lng": 14.85094117908038,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 5847,
+        "brand": "Landini",
+        "dealer_name": "Markus Pinnitsch Maschinenheld GmbH",
+        "country": "DE",
+        "city": "Leutschach a.d. Weinstra\u00dfe",
+        "lat": 46.660909,
+        "lng": 15.47008,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 5972,
+        "brand": "Landini",
+        "dealer_name": "Farm and Fleet Services",
+        "country": "GB",
+        "city": "PL15 8QE",
+        "lat": -41.439068,
+        "lng": 147.1357671,
+        "expected_lat": [
+          49.5,
+          61.0
+        ],
+        "expected_lng": [
+          -8.5,
+          2.0
+        ]
+      },
+      {
+        "row": 6285,
+        "brand": "McCormick",
+        "dealer_name": "ORBES AGRICOLA S.A.C.",
+        "country": "AR",
+        "city": "Per\u00fa",
+        "lat": -12.0564286,
+        "lng": -76.9735245,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 6286,
+        "brand": "McCormick",
+        "dealer_name": "Tractores McCormick de Centro Am\u00e9rica",
+        "country": "AR",
+        "city": "Guatemala \u2013 Salvador",
+        "lat": 14.4606209,
+        "lng": -90.642595,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 6287,
+        "brand": "McCormick",
+        "dealer_name": "Vision Equipment Supply",
+        "country": "AR",
+        "city": "Barbados \u2013 Caribbean Island",
+        "lat": 13.1363332,
+        "lng": -59.4675191,
+        "expected_lat": [
+          -56.0,
+          -21.0
+        ],
+        "expected_lng": [
+          -74.0,
+          -53.0
+        ]
+      },
+      {
+        "row": 6330,
+        "brand": "McCormick",
+        "dealer_name": "Moreau Agri Slovakia",
+        "country": "CZ",
+        "city": "Madunice",
+        "lat": 48.4896857,
+        "lng": 17.7880774,
+        "expected_lat": [
+          48.5,
+          51.1
+        ],
+        "expected_lng": [
+          12.1,
+          18.9
+        ]
+      },
+      {
+        "row": 6358,
+        "brand": "McCormick",
+        "dealer_name": "Fischer Landtechnik",
+        "country": "DE",
+        "city": "Straden",
+        "lat": 46.791953,
+        "lng": 15.8357119,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 6363,
+        "brand": "McCormick",
+        "dealer_name": "Gerhard Sch\u00f6n Landtechnik \u2013 Servicest\u00fctzpunkt",
+        "country": "DE",
+        "city": "Nieder\u00f6sterreich",
+        "lat": 48.2370323,
+        "lng": 15.7445189,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 6372,
+        "brand": "McCormick",
+        "dealer_name": "Ing. Johann Weber GmbH",
+        "country": "DE",
+        "city": "Burgenland",
+        "lat": 47.3917348,
+        "lng": 16.3442148,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 6376,
+        "brand": "McCormick",
+        "dealer_name": "KFZ Perepatics Inhaber Ch.",
+        "country": "DE",
+        "city": "Podersdorf am See",
+        "lat": 47.85451986185506,
+        "lng": 16.847544525708525,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 6394,
+        "brand": "McCormick",
+        "dealer_name": "Maschek GesmbH \u2013 Servicest\u00fctzpunkt",
+        "country": "DE",
+        "city": "Nieder\u00f6sterreich",
+        "lat": 48.5543508,
+        "lng": 16.3946077,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 6412,
+        "brand": "McCormick",
+        "dealer_name": "SZ Landtechnik GmbH",
+        "country": "DE",
+        "city": "Nieder\u00f6sterreich",
+        "lat": 47.9974814,
+        "lng": 16.6553645,
+        "expected_lat": [
+          47.0,
+          55.5
+        ],
+        "expected_lng": [
+          5.5,
+          15.5
+        ]
+      },
+      {
+        "row": 6534,
+        "brand": "McCormick",
+        "dealer_name": "GUYAMAT",
+        "country": "FR",
+        "city": "Guyane",
+        "lat": 4.9213196,
+        "lng": -52.4891909,
+        "expected_lat": [
+          41.0,
+          51.5
+        ],
+        "expected_lng": [
+          -5.5,
+          10.0
+        ]
+      },
+      {
+        "row": 6541,
+        "brand": "McCormick",
+        "dealer_name": "MANUCOM",
+        "country": "FR",
+        "city": "Martinique",
+        "lat": 14.6276432,
+        "lng": -60.9889238,
+        "expected_lat": [
+          41.0,
+          51.5
+        ],
+        "expected_lng": [
+          -5.5,
+          10.0
+        ]
+      },
+      {
+        "row": 6542,
+        "brand": "McCormick",
+        "dealer_name": "MANUCOM Guyamat",
+        "country": "FR",
+        "city": "Guyane fran\u00e7aise",
+        "lat": 4.9348029,
+        "lng": -52.415096,
+        "expected_lat": [
+          41.0,
+          51.5
+        ],
+        "expected_lng": [
+          -5.5,
+          10.0
+        ]
+      },
+      {
+        "row": 6543,
+        "brand": "McCormick",
+        "dealer_name": "MANUCOM Guyamat",
+        "country": "FR",
+        "city": "Baie-Mahault",
+        "lat": 16.2420372,
+        "lng": -61.5676714,
+        "expected_lat": [
+          41.0,
+          51.5
+        ],
+        "expected_lng": [
+          -5.5,
+          10.0
+        ]
+      },
+      {
+        "row": 6564,
+        "brand": "McCormick",
+        "dealer_name": "SAMCOM",
+        "country": "FR",
+        "city": "Guadeloupe",
+        "lat": 16.2444738,
+        "lng": -61.571718,
+        "expected_lat": [
+          41.0,
+          51.5
+        ],
+        "expected_lng": [
+          -5.5,
+          10.0
+        ]
+      },
+      {
+        "row": 6589,
+        "brand": "McCormick",
+        "dealer_name": "Farm and Fleet Services",
+        "country": "GB",
+        "city": "PL15 8QE",
+        "lat": -41.439068,
+        "lng": 147.1357671,
+        "expected_lat": [
+          49.5,
+          61.0
+        ],
+        "expected_lng": [
+          -8.5,
+          2.0
+        ]
+      },
+      {
+        "row": 6808,
+        "brand": "McCormick",
+        "dealer_name": "Atlantic Trailer & Equipment Ltd.",
+        "country": "US",
+        "city": "Newfoundland",
+        "lat": 47.5251382,
+        "lng": -52.8460886,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 6878,
+        "brand": "McCormick",
+        "dealer_name": "KINGS EQUIPMENT SALES & SERVICE",
+        "country": "US",
+        "city": "NS",
+        "lat": 45.055127,
+        "lng": -64.516709,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 6911,
+        "brand": "McCormick",
+        "dealer_name": "Patterson Sales & Service (Moncton)",
+        "country": "US",
+        "city": "NB",
+        "lat": 46.115308,
+        "lng": -64.69669,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 6912,
+        "brand": "McCormick",
+        "dealer_name": "Patterson Sales & Service (Truro)",
+        "country": "US",
+        "city": "NS",
+        "lat": 45.381052,
+        "lng": -63.320261,
+        "expected_lat": [
+          24.0,
+          72.0
+        ],
+        "expected_lng": [
+          -180.0,
+          -65.0
+        ]
+      },
+      {
+        "row": 7391,
+        "brand": "SAME",
+        "dealer_name": "R\u00c9UNION PI\u00c8CES AGRICOLES",
+        "country": "FR",
+        "city": "Saint-Benoit",
+        "lat": -21.055407,
+        "lng": 55.711563,
+        "expected_lat": [
+          41.0,
+          51.5
+        ],
+        "expected_lng": [
+          -5.5,
+          10.0
+        ]
+      },
+      {
+        "row": 7439,
+        "brand": "SAME",
+        "dealer_name": "JACOBS SERVICE STATION LTD",
+        "country": "GB",
+        "city": "ENNISCRONE MAC",
+        "lat": 54.243068,
+        "lng": -9.054347,
+        "expected_lat": [
+          49.5,
+          61.0
+        ],
+        "expected_lng": [
+          -8.5,
+          2.0
+        ]
+      },
+      {
+        "row": 7659,
+        "brand": "Lamborghini Tractors",
+        "dealer_name": "AUTO IMD (SENDIM)",
+        "country": "PT",
+        "city": "Sendim",
+        "lat": 41.3848,
+        "lng": 41.3848,
+        "expected_lat": [
+          32.0,
+          42.2
+        ],
+        "expected_lng": [
+          -31.5,
+          -6.1
+        ]
+      },
+      {
+        "row": 7750,
+        "brand": "SAME",
+        "dealer_name": "G\u00dcRDA\u011e MOTORLU ARA\u00c7LAR LTD. \u015eT\u0130",
+        "country": "TR",
+        "city": "MERKEZ/LEFKO\u015eA -",
+        "lat": 35.198,
+        "lng": 33.4151,
+        "expected_lat": [
+          35.8,
+          42.2
+        ],
+        "expected_lng": [
+          25.6,
+          44.8
+        ]
+      },
+      {
+        "row": 7821,
+        "brand": "SAME",
+        "dealer_name": "A. H. Alsonidar & Sons",
+        "country": "ZA",
+        "city": "SANA'A -",
+        "lat": 15.3694,
+        "lng": 44.191,
+        "expected_lat": [
+          -35.0,
+          -22.0
+        ],
+        "expected_lng": [
+          16.4,
+          33.0
+        ]
+      },
+      {
+        "row": 7822,
+        "brand": "SAME",
+        "dealer_name": "C.WOERMANN GMBH & CO",
+        "country": "ZA",
+        "city": "Barrio Petrangol -",
+        "lat": -8.77973,
+        "lng": 13.3207,
+        "expected_lat": [
+          -35.0,
+          -22.0
+        ],
+        "expected_lng": [
+          16.4,
+          33.0
+        ]
+      }
+    ],
+    "zero_coords": [
+      {
+        "row": 7646,
+        "brand": "Deutz-Fahr",
+        "dealer_name": "Savona Sp.z o.o.",
+        "country": "PL",
+        "lat": 0.0,
+        "lng": 0.0
+      }
+    ],
+    "missing_coords": [
+      {
+        "row": 6238,
+        "brand": "Landini",
+        "dealer_name": "Genius Thabazimbi",
+        "country": "ZA",
+        "city": "North West"
+      },
+      {
+        "row": 6715,
+        "brand": "McCormick",
+        "dealer_name": "LABORES TEPIC \u2013 McCormick",
+        "country": "MX",
+        "city": ""
+      },
+      {
+        "row": 6896,
+        "brand": "McCormick",
+        "dealer_name": "Mel\u2019s Farm Repair",
+        "country": "US",
+        "city": "ID"
+      },
+      {
+        "row": 6987,
+        "brand": "McCormick",
+        "dealer_name": "Genius Thabazimbi",
+        "country": "ZA",
+        "city": "North West"
+      },
+      {
+        "row": 7260,
+        "brand": "SAME",
+        "dealer_name": "Solicita presupuesto",
+        "country": "ES",
+        "city": ""
+      },
+      {
+        "row": 7927,
+        "brand": "Fendt",
+        "dealer_name": "",
+        "country": "",
+        "city": ""
+      },
+      {
+        "row": 9378,
+        "brand": "Massey Ferguson",
+        "dealer_name": "",
+        "country": "",
+        "city": ""
+      }
+    ]
+  },
+  "duplicates": {
+    "exact_count": 57,
+    "exact_samples": [
+      {
+        "row": 2001,
+        "first_row": 1986,
+        "brand": "John Deere",
+        "dealer_name": "AHS GmbH",
+        "city": "Gardelegen OT Lindstedt",
+        "address": "Holzhausener Stra\u00dfe 154"
+      },
+      {
+        "row": 2018,
+        "first_row": 2017,
+        "brand": "John Deere",
+        "dealer_name": "B + S Landtechnik GmbH",
+        "city": "Grabow",
+        "address": "Lassahner Stra\u00dfe 21"
+      },
+      {
+        "row": 2504,
+        "first_row": 2503,
+        "brand": "John Deere",
+        "dealer_name": "AVANTERRA TECH S.L.",
+        "city": "Albacete AB",
+        "address": "Avda. Gregorio Arcos, n\u00famero 46."
+      },
+      {
+        "row": 2829,
+        "first_row": 2828,
+        "brand": "John Deere",
+        "dealer_name": "MEGATRON EAD",
+        "city": "Marten",
+        "address": "Ul. Sv. Sv. Kiril i Metodii"
+      },
+      {
+        "row": 3169,
+        "first_row": 1507,
+        "brand": "John Deere",
+        "dealer_name": "SAS AGRI-POLE",
+        "city": "LE MONTAT",
+        "address": "85 route du Bos"
+      },
+      {
+        "row": 3171,
+        "first_row": 1505,
+        "brand": "John Deere",
+        "dealer_name": "SAS AGRI-POLE",
+        "city": "Gramat",
+        "address": "D840 Route de Figeac"
+      },
+      {
+        "row": 3191,
+        "first_row": 1548,
+        "brand": "John Deere",
+        "dealer_name": "DEFI-MAT",
+        "city": "AUBUSSON",
+        "address": "ZI du Mont"
+      },
+      {
+        "row": 3198,
+        "first_row": 1561,
+        "brand": "John Deere",
+        "dealer_name": "L'ATELIER DE TREMONTAGNE",
+        "city": "Saint-Pierre",
+        "address": "ZA Les Fournets"
+      },
+      {
+        "row": 3263,
+        "first_row": 1667,
+        "brand": "John Deere",
+        "dealer_name": "Bouchard Agriculture",
+        "city": "Saint Brice",
+        "address": "13 Avenue Patton"
+      },
+      {
+        "row": 3293,
+        "first_row": 1729,
+        "brand": "John Deere",
+        "dealer_name": "BOUCHARD VROMMAN SAS",
+        "city": "Mesnil St Georges",
+        "address": "Rue de Bouloir"
+      },
+      {
+        "row": 3304,
+        "first_row": 1750,
+        "brand": "John Deere",
+        "dealer_name": "Knoblauch Landtechnik GmbH",
+        "city": "Stockach",
+        "address": "Hardtring 27"
+      },
+      {
+        "row": 3305,
+        "first_row": 1748,
+        "brand": "John Deere",
+        "dealer_name": "M\u00fcller Landmaschinen GmbH",
+        "city": "Bonndorf",
+        "address": "K\u00fcferstrasse 1"
+      },
+      {
+        "row": 3309,
+        "first_row": 1749,
+        "brand": "John Deere",
+        "dealer_name": "Knoblauch Landtechnik GmbH",
+        "city": "Immendingen",
+        "address": "Schwarzwaldstr. 90"
+      },
+      {
+        "row": 3311,
+        "first_row": 1754,
+        "brand": "John Deere",
+        "dealer_name": "Knoblauch Landtechnik GmbH",
+        "city": "Ravensburg",
+        "address": "Bleicherstra\u00dfe 55"
+      },
+      {
+        "row": 3312,
+        "first_row": 1755,
+        "brand": "John Deere",
+        "dealer_name": "Knoblauch Landtechnik GmbH",
+        "city": "Wangen",
+        "address": "Im Niederdorf 9"
+      },
+      {
+        "row": 3318,
+        "first_row": 1763,
+        "brand": "John Deere",
+        "dealer_name": "Streicher GmbH Landmaschinen",
+        "city": "G\u00fcnzach",
+        "address": "Aitranger Stra\u00dfe 13"
+      },
+      {
+        "row": 3326,
+        "first_row": 1766,
+        "brand": "John Deere",
+        "dealer_name": "Zuern GmbH & Co. KG",
+        "city": "Oberessendorf",
+        "address": "Ramstal 6"
+      },
+      {
+        "row": 3343,
+        "first_row": 1798,
+        "brand": "John Deere",
+        "dealer_name": "Fischer Landmaschinen GmbH St\u00fctzpunkt Saar-Pfalz",
+        "city": "Zweibr\u00fccken",
+        "address": "Stockholmer Stra\u00dfe 7"
+      },
+      {
+        "row": 3386,
+        "first_row": 1812,
+        "brand": "John Deere",
+        "dealer_name": "Penzkofer Landtechnik",
+        "city": "Unterwattenbach",
+        "address": "Hauptstra\u00dfe 22"
+      },
+      {
+        "row": 3397,
+        "first_row": 1827,
+        "brand": "John Deere",
+        "dealer_name": "Miehling Landtechnik",
+        "city": "Pollenfeld",
+        "address": "Am D\u00f6rrenhof 23"
+      }
+    ],
+    "multi_brand_count": 1037,
+    "multi_brand_samples": [
+      {
+        "dealer_name": "SUUPOHJAN KONEHUOLTO AY",
+        "city": "KAUHAJOKI",
+        "country": "FI",
+        "brands": [
+          "Fendt",
+          "John Deere"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "LAKKAP\u00c4\u00c4N KONE JA AUTO OY",
+        "city": "PELLO",
+        "country": "FI",
+        "brands": [
+          "Fendt",
+          "John Deere"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Schmidt KG",
+        "city": "Gschwend",
+        "country": "DE",
+        "brands": [
+          "John Deere",
+          "SAME"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Schmid Landtechnik",
+        "city": "Breitenbrunn",
+        "country": "DE",
+        "brands": [
+          "CLAAS",
+          "John Deere"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "S\u00e4mann Landmaschinen Fachbetrieb GmbH",
+        "city": "Uffenheim",
+        "country": "DE",
+        "brands": [
+          "John Deere",
+          "Valtra"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "GLT Haldimann AG",
+        "city": "Walperswil",
+        "country": "CH",
+        "brands": [
+          "John Deere",
+          "SAME"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Georg Lobnig",
+        "city": "Ruden",
+        "country": "AT",
+        "brands": [
+          "CLAAS",
+          "Valtra"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Briton BV",
+        "city": "Kalmthout",
+        "country": "BE",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Walter Streit AG",
+        "city": "Fahrni b. Thun",
+        "country": "CH",
+        "brands": [
+          "CLAAS",
+          "Massey Ferguson"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "HOWA Landtechnik GmbH",
+        "city": "Neusorg",
+        "country": "DE",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Opgenhoff Landtechnik",
+        "city": "Kevelaer",
+        "country": "DE",
+        "brands": [
+          "CLAAS",
+          "Deutz-Fahr"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "TALLERES VILLALVILLA, S.L.",
+        "city": "Villalbilla de Burgos",
+        "country": "ES",
+        "brands": [
+          "CLAAS",
+          "New Holland"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Agri Center",
+        "city": "Hutchinson",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "New Holland"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Altorfer Inc.",
+        "city": "Blandinsville",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Altorfer Inc.",
+        "city": "Dix",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Altorfer Inc.",
+        "city": "Dwight",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Altorfer Inc.",
+        "city": "Rock Falls",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Altorfer Inc.",
+        "city": "West Branch",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt"
+        ],
+        "count": 2
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Aberdeen",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Bismarck",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Devils Lake",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Dickinson",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Grand Forks",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Hankinson",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Hoople",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Huron",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Jamestown",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Minot",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Pierre",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      },
+      {
+        "dealer_name": "Butler Machinery Company",
+        "city": "Rapid City",
+        "country": "US",
+        "brands": [
+          "CLAAS",
+          "Fendt",
+          "Massey Ferguson"
+        ],
+        "count": 3
+      }
+    ],
+    "close_coords_samples": [
+      {
+        "brand": "John Deere",
+        "name1": "Beard Equipment Company",
+        "name2": "Ag-Pro",
+        "lat1": 30.2089,
+        "lng1": -81.5786,
+        "lat2": 30.2091,
+        "lng2": -81.5779,
+        "distance_approx_m": 80
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Doggett Machinery Services",
+        "name2": "Sunshine Quality Solutions",
+        "lat1": 30.5122,
+        "lng1": -90.1133,
+        "lat2": 30.5158,
+        "lng2": -90.1192,
+        "distance_approx_m": 767
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Doggett Heavy Machinery",
+        "name2": "United Ag & Turf",
+        "lat1": 30.6639,
+        "lng1": -96.4156,
+        "lat2": 30.667897,
+        "lng2": -96.409447,
+        "distance_approx_m": 814
+      },
+      {
+        "brand": "John Deere",
+        "name1": "SunSouth LLC",
+        "name2": "Dobbs Equipment",
+        "lat1": 31.251021,
+        "lng1": -85.384891,
+        "lat2": 31.253695,
+        "lng2": -85.384459,
+        "distance_approx_m": 300
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Blanchard Equipment Co., Inc.",
+        "name2": "Dobbs Equipment",
+        "lat1": 32.0851,
+        "lng1": -81.198,
+        "lat2": 32.088023,
+        "lng2": -81.196142,
+        "distance_approx_m": 384
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Dobbs Equipment",
+        "name2": "SunSouth LLC",
+        "lat1": 32.439538,
+        "lng1": -84.965328,
+        "lat2": 32.446347,
+        "lng2": -84.975283,
+        "distance_approx_m": 1338
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Warrior Tractor & Equipment",
+        "name2": "TriGreen Equipment LLC",
+        "lat1": 33.5963,
+        "lng1": -85.8413,
+        "lat2": 33.598,
+        "lng2": -85.8403,
+        "distance_approx_m": 218
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Stribling Equipment, LLC",
+        "name2": "P & K Equipment, Inc.",
+        "lat1": 35.3275,
+        "lng1": -94.3975,
+        "lat2": 35.3281,
+        "lng2": -94.3963,
+        "distance_approx_m": 148
+      },
+      {
+        "brand": "John Deere",
+        "name1": "4 Rivers Equipment, LLC",
+        "name2": "Stotz Equipment",
+        "lat1": 36.7411,
+        "lng1": -108.266,
+        "lat2": 36.742147,
+        "lng2": -108.266461,
+        "distance_approx_m": 126
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Murphy Tractor & Equipment",
+        "name2": "BTI",
+        "lat1": 38.3148,
+        "lng1": -98.7564,
+        "lat2": 38.319,
+        "lng2": -98.757009,
+        "distance_approx_m": 471
+      },
+      {
+        "brand": "John Deere",
+        "name1": "TRIVIUM AGRONOMIA Y MAQUINARIA S.L.",
+        "name2": "TRIVIUM",
+        "lat1": 38.766286,
+        "lng1": -3.409317,
+        "lat2": 38.7663,
+        "lng2": -3.40932,
+        "distance_approx_m": 1
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Murphy Tractor & Equipment",
+        "name2": "Heritage Tractor, Inc.",
+        "lat1": 38.841575,
+        "lng1": -94.816855,
+        "lat2": 38.842276,
+        "lng2": -94.816658,
+        "distance_approx_m": 80
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Foster F. Wineland, Inc.",
+        "name2": "West Central Equipment, LLC",
+        "lat1": 40.308749,
+        "lng1": -78.291526,
+        "lat2": 40.308917,
+        "lng2": -78.293111,
+        "distance_approx_m": 176
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Foster F. Wineland, Inc.",
+        "name2": "West Central Equipment, LLC",
+        "lat1": 40.4776,
+        "lng1": -78.6983,
+        "lat2": 40.479584,
+        "lng2": -78.702449,
+        "distance_approx_m": 510
+      },
+      {
+        "brand": "John Deere",
+        "name1": "LAMUSA Y SERVICIOS,S.L.",
+        "name2": "AUTOTER SL",
+        "lat1": 41.062387,
+        "lng1": -0.152319,
+        "lat2": 41.062387,
+        "lng2": -0.152319,
+        "distance_approx_m": 0
+      },
+      {
+        "brand": "John Deere",
+        "name1": "21st Century Equipment, LLC",
+        "name2": "RDO Equipment Co.",
+        "lat1": 41.135006,
+        "lng1": -104.709013,
+        "lat2": 41.136415,
+        "lng2": -104.711869,
+        "distance_approx_m": 353
+      },
+      {
+        "brand": "John Deere",
+        "name1": "The W. I. Clark Company",
+        "name2": "United Ag & Turf",
+        "lat1": 41.6626,
+        "lng1": -71.9066,
+        "lat2": 41.666939,
+        "lng2": -71.911539,
+        "distance_approx_m": 729
+      },
+      {
+        "brand": "John Deere",
+        "name1": "DELTACINCO L\u00cdNEA VERDE, S.L.",
+        "name2": "COMERCIAL AGRICOLA CASTELLANA, S.L.",
+        "lat1": 41.9977,
+        "lng1": -4.51321,
+        "lat2": 42.0077,
+        "lng2": -4.51772,
+        "distance_approx_m": 1217
+      },
+      {
+        "brand": "John Deere",
+        "name1": "SARL AGRISUD",
+        "name2": "TRANCHARD 26",
+        "lat1": 43.386973,
+        "lng1": 3.310927,
+        "lat2": 43.387181,
+        "lng2": 3.31114,
+        "distance_approx_m": 33
+      },
+      {
+        "brand": "John Deere",
+        "name1": "C & B Operations, LLC",
+        "name2": "RDO Equipment Co.",
+        "lat1": 43.565865,
+        "lng1": -96.767588,
+        "lat2": 43.575029,
+        "lng2": -96.773784,
+        "distance_approx_m": 1227
+      },
+      {
+        "brand": "John Deere",
+        "name1": "JARDIGREEN",
+        "name2": "AGRIVISION",
+        "lat1": 43.7064,
+        "lng1": -1.02998,
+        "lat2": 43.706746,
+        "lng2": -1.027971,
+        "distance_approx_m": 226
+      },
+      {
+        "brand": "John Deere",
+        "name1": "MEGATRON EAD",
+        "name2": "MEGATRON EAD, RUSSE",
+        "lat1": 43.906675,
+        "lng1": 26.076854,
+        "lat2": 43.9067,
+        "lng2": 26.076996,
+        "distance_approx_m": 16
+      },
+      {
+        "brand": "John Deere",
+        "name1": "MEGATRON EAD, RUSSE",
+        "name2": "MEGATRON EAD",
+        "lat1": 43.9067,
+        "lng1": 26.076996,
+        "lat2": 43.915195,
+        "lng2": 26.077456,
+        "distance_approx_m": 944
+      },
+      {
+        "brand": "John Deere",
+        "name1": "United Construction & Forestry",
+        "name2": "United Ag & Turf",
+        "lat1": 44.453234,
+        "lng1": -73.134018,
+        "lat2": 44.458462,
+        "lng2": -73.130188,
+        "distance_approx_m": 719
+      },
+      {
+        "brand": "John Deere",
+        "name1": "SARL TRANCHARD ET FILS",
+        "name2": "TRANCHARD 26",
+        "lat1": 44.47455,
+        "lng1": 3.33399,
+        "lat2": 44.47455,
+        "lng2": 3.33399,
+        "distance_approx_m": 0
+      },
+      {
+        "brand": "John Deere",
+        "name1": "Hutson, Inc.",
+        "name2": "AIS Construction Equipment",
+        "lat1": 44.771541,
+        "lng1": -85.413259,
+        "lat2": 44.7722,
+        "lng2": -85.4145,
+        "distance_approx_m": 155
+      },
+      {
+        "brand": "John Deere",
+        "name1": "AGRIBERTOCCHI SRL",
+        "name2": "AGRO SYSTEM SNC DI BASSOLI SILVANO & C.",
+        "lat1": 44.7967,
+        "lng1": 10.6864,
+        "lat2": 44.79724,
+        "lng2": 10.68656,
+        "distance_approx_m": 62
+      },
+      {
+        "brand": "John Deere",
+        "name1": "SAS Bonfils",
+        "name2": "Bonfils Vercors Service",
+        "lat1": 45.1599,
+        "lng1": 5.34095,
+        "lat2": 45.1599,
+        "lng2": 5.34095,
+        "distance_approx_m": 0
+      },
+      {
+        "brand": "John Deere",
+        "name1": "IPSO BRASOV",
+        "name2": "Elmas S.R.L.",
+        "lat1": 45.6729,
+        "lng1": 25.5797,
+        "lat2": 45.674,
+        "lng2": 25.58,
+        "distance_approx_m": 126
+      },
+      {
+        "brand": "John Deere",
+        "name1": "C & B Operations, LLC",
+        "name2": "RDO Construction Equipment Co.",
+        "lat1": 45.750255,
+        "lng1": -108.543575,
+        "lat2": 45.750362,
+        "lng2": -108.547984,
+        "distance_approx_m": 489
+      }
+    ]
+  },
+  "quality": {
+    "non_iso_codes": {
+      "INTL": 70,
+      "EU": 13,
+      "EA": 3,
+      "FE": 2
+    },
+    "non_iso_samples": [
+      {
+        "code": "INTL",
+        "row": 5993,
+        "brand": "Landini",
+        "dealer_name": "AGRI PARTS OSIYO LTD",
+        "city": "Uzbekistan"
+      },
+      {
+        "code": "INTL",
+        "row": 5994,
+        "brand": "Landini",
+        "dealer_name": "AGRIBAU SHPK",
+        "city": "Kosovo"
+      },
+      {
+        "code": "INTL",
+        "row": 5995,
+        "brand": "Landini",
+        "dealer_name": "ASCON doo Koper",
+        "city": "SLOVENIJA"
+      },
+      {
+        "code": "INTL",
+        "row": 5996,
+        "brand": "Landini",
+        "dealer_name": "Agro Trade Services (FZC) LLC",
+        "city": "322 Sohar"
+      },
+      {
+        "code": "INTL",
+        "row": 5997,
+        "brand": "Landini",
+        "dealer_name": "Argi",
+        "city": "Holland"
+      },
+      {
+        "code": "INTL",
+        "row": 5998,
+        "brand": "Landini",
+        "dealer_name": "Argo Tractors Turkey",
+        "city": "\u0130stanbul"
+      },
+      {
+        "code": "INTL",
+        "row": 5999,
+        "brand": "Landini",
+        "dealer_name": "BASADORO SRL",
+        "city": "Moldova"
+      },
+      {
+        "code": "INTL",
+        "row": 6000,
+        "brand": "Landini",
+        "dealer_name": "Bakil Dhaifallah Company",
+        "city": "Yemen"
+      },
+      {
+        "code": "INTL",
+        "row": 6001,
+        "brand": "Landini",
+        "dealer_name": "Bakil Dhaifallah Company",
+        "city": "Yemen"
+      },
+      {
+        "code": "INTL",
+        "row": 6002,
+        "brand": "Landini",
+        "dealer_name": "CIMERTEX ANGOLA",
+        "city": "Angola"
+      },
+      {
+        "code": "INTL",
+        "row": 6003,
+        "brand": "Landini",
+        "dealer_name": "DAVID CZAPNIK & SONS LTD",
+        "city": "Israel"
+      },
+      {
+        "code": "INTL",
+        "row": 6004,
+        "brand": "Landini",
+        "dealer_name": "DELTA AGRAR",
+        "city": "Republic of Serbia"
+      },
+      {
+        "code": "INTL",
+        "row": 6005,
+        "brand": "Landini",
+        "dealer_name": "DELTA AGRAR",
+        "city": "Bosnia and Herzegovina"
+      },
+      {
+        "code": "INTL",
+        "row": 6006,
+        "brand": "Landini",
+        "dealer_name": "DIMATEQ S.A.",
+        "city": "Morocco"
+      },
+      {
+        "code": "INTL",
+        "row": 6007,
+        "brand": "Landini",
+        "dealer_name": "EVRO STIL DOO",
+        "city": "The Republic of North Macedonia"
+      },
+      {
+        "code": "INTL",
+        "row": 6008,
+        "brand": "Landini",
+        "dealer_name": "Egyptian Company for trade",
+        "city": "Egypt"
+      },
+      {
+        "code": "INTL",
+        "row": 6009,
+        "brand": "Landini",
+        "dealer_name": "French Technology Company (FRENTEC)",
+        "city": "Sudan"
+      },
+      {
+        "code": "INTL",
+        "row": 6010,
+        "brand": "Landini",
+        "dealer_name": "Hrashk Aygi LLC",
+        "city": "Armenia"
+      },
+      {
+        "code": "INTL",
+        "row": 6011,
+        "brand": "Landini",
+        "dealer_name": "ICS",
+        "city": "Senegal"
+      },
+      {
+        "code": "INTL",
+        "row": 6012,
+        "brand": "Landini",
+        "dealer_name": "LIBAN AGRI Growing A-Z",
+        "city": "Lebanon"
+      },
+      {
+        "code": "INTL",
+        "row": 6013,
+        "brand": "Landini",
+        "dealer_name": "LIBAN AGRI Growing A-Z",
+        "city": "Lebanon"
+      },
+      {
+        "code": "INTL",
+        "row": 6014,
+        "brand": "Landini",
+        "dealer_name": "LIH SIHN ENTERPRISE CO. LTD",
+        "city": "TAIWAN R.O.C."
+      },
+      {
+        "code": "INTL",
+        "row": 6015,
+        "brand": "Landini",
+        "dealer_name": "M.T.S.",
+        "city": "Cameroon"
+      },
+      {
+        "code": "INTL",
+        "row": 6016,
+        "brand": "Landini",
+        "dealer_name": "MOREAU AGRI spol. s r.o",
+        "city": "Rep.Ceka and Slovak"
+      },
+      {
+        "code": "INTL",
+        "row": 6017,
+        "brand": "Landini",
+        "dealer_name": "MTS / SPEED APPRO",
+        "city": "Chad"
+      },
+      {
+        "code": "INTL",
+        "row": 6018,
+        "brand": "Landini",
+        "dealer_name": "Noblex LTD",
+        "city": "Georgia"
+      },
+      {
+        "code": "INTL",
+        "row": 6019,
+        "brand": "Landini",
+        "dealer_name": "SAS FOUCQUE MATERIELS",
+        "city": "ISOLE REUNION-MADAGASCAR"
+      },
+      {
+        "code": "INTL",
+        "row": 6020,
+        "brand": "Landini",
+        "dealer_name": "SOCOOPEC S.A.R.L.",
+        "city": "Tunisia"
+      },
+      {
+        "code": "INTL",
+        "row": 6021,
+        "brand": "Landini",
+        "dealer_name": "STK-AGRO LLC",
+        "city": "Ukraine"
+      },
+      {
+        "code": "INTL",
+        "row": 6022,
+        "brand": "Landini",
+        "dealer_name": "STURLAUGUR JONSSON & CO. EHF",
+        "city": "Iceland"
+      }
+    ],
+    "blank_country": [
+      {
+        "row": 7927,
+        "brand": "Fendt",
+        "dealer_name": "",
+        "city": "",
+        "lat": "",
+        "lng": ""
+      },
+      {
+        "row": 9378,
+        "brand": "Massey Ferguson",
+        "dealer_name": "",
+        "city": "",
+        "lat": "",
+        "lng": ""
+      }
+    ],
+    "argo_issues": [
+      {
+        "row": 5717,
+        "brand": "Landini",
+        "dealer_name": "BYC International",
+        "city": "Panam\u00e1",
+        "claimed_country": "AR",
+        "lat": 9.0458577,
+        "lng": -79.4666325,
+        "likely_country": "Central America"
+      },
+      {
+        "row": 5718,
+        "brand": "Landini",
+        "dealer_name": "DERCO Per\u00f9 S.A.",
+        "city": "Rep\u00fablica del Per\u00fa",
+        "claimed_country": "AR",
+        "lat": -12.0509044,
+        "lng": -76.9447868,
+        "likely_country": "Unknown"
+      },
+      {
+        "row": 5719,
+        "brand": "Landini",
+        "dealer_name": "DISTRIBUIDORA AGRICOLA LANDINI C.A",
+        "city": "Via La Colonia - Zona Industri Estado Portuguesa - Pa\u00eds VENEZ",
+        "claimed_country": "AR",
+        "lat": 9.094399899999999,
+        "lng": -69.097023,
+        "likely_country": "Colombia/Venezuela/Central America"
+      },
+      {
+        "row": 5720,
+        "brand": "Landini",
+        "dealer_name": "EURONOVA",
+        "city": "Rep. Dominicana",
+        "claimed_country": "AR",
+        "lat": 18.483642,
+        "lng": -69.9625952,
+        "likely_country": "Caribbean"
+      },
+      {
+        "row": 5721,
+        "brand": "Landini",
+        "dealer_name": "FORMUNICA S.A.",
+        "city": "Rep\u00fablica de Nicaragua",
+        "claimed_country": "AR",
+        "lat": 12.141911,
+        "lng": -86.2811569,
+        "likely_country": "Unknown"
+      },
+      {
+        "row": 5723,
+        "brand": "Landini",
+        "dealer_name": "MEINDERTSMA",
+        "city": "Republiek Suriname",
+        "claimed_country": "AR",
+        "lat": 5.8005937,
+        "lng": -55.1770775,
+        "likely_country": "BR"
+      },
+      {
+        "row": 5724,
+        "brand": "Landini",
+        "dealer_name": "Monta\u00f1o & Gutierrez S.A.S",
+        "city": "Rep\u00fablica de Colombia",
+        "claimed_country": "AR",
+        "lat": 4.6224949,
+        "lng": -74.089564,
+        "likely_country": "Colombia/Venezuela/Central America"
+      },
+      {
+        "row": 5725,
+        "brand": "Landini",
+        "dealer_name": "Tecnoagr\u00edcola de Centroam\u00e9rica, S.A.",
+        "city": "Rep\u00fablica de Costa Rica",
+        "claimed_country": "AR",
+        "lat": 9.9875564,
+        "lng": -84.1653265,
+        "likely_country": "Central America"
+      },
+      {
+        "row": 5726,
+        "brand": "Landini",
+        "dealer_name": "Tractores McCormick de Centro Am\u00e9rica",
+        "city": "Guatemala \u2013 Salvador",
+        "claimed_country": "AR",
+        "lat": 14.4605359,
+        "lng": -90.6425297,
+        "likely_country": "MX"
+      },
+      {
+        "row": 5727,
+        "brand": "Landini",
+        "dealer_name": "Vision Equipment Supply",
+        "city": "Barbados \u2013 Caribbean Island",
+        "claimed_country": "AR",
+        "lat": 13.1363332,
+        "lng": -59.4675191,
+        "likely_country": "Unknown"
+      },
+      {
+        "row": 6285,
+        "brand": "McCormick",
+        "dealer_name": "ORBES AGRICOLA S.A.C.",
+        "city": "Per\u00fa",
+        "claimed_country": "AR",
+        "lat": -12.0564286,
+        "lng": -76.9735245,
+        "likely_country": "Unknown"
+      },
+      {
+        "row": 6286,
+        "brand": "McCormick",
+        "dealer_name": "Tractores McCormick de Centro Am\u00e9rica",
+        "city": "Guatemala \u2013 Salvador",
+        "claimed_country": "AR",
+        "lat": 14.4606209,
+        "lng": -90.642595,
+        "likely_country": "MX"
+      },
+      {
+        "row": 6287,
+        "brand": "McCormick",
+        "dealer_name": "Vision Equipment Supply",
+        "city": "Barbados \u2013 Caribbean Island",
+        "claimed_country": "AR",
+        "lat": 13.1363332,
+        "lng": -59.4675191,
+        "likely_country": "Unknown"
+      }
+    ],
+    "missing_name": [
+      {
+        "row": 7927,
+        "brand": "Fendt",
+        "country": "",
+        "city": ""
+      },
+      {
+        "row": 9378,
+        "brand": "Massey Ferguson",
+        "country": "",
+        "city": ""
+      }
+    ],
+    "phone_formats": {
+      "digits_only": 6194,
+      "intl_format": 3614,
+      "other": 2982,
+      "00_prefix": 1276
+    }
+  },
+  "sdf_gaps": {
+    "sdf_us_total": 0,
+    "deutz_fahr_us": 0,
+    "same_us": 0,
+    "deutz_fahr_us_dealers": [],
+    "note": "Deutz-Fahr US dealer locator was blocked by Cloudflare. Estimate ~50-80 US Deutz-Fahr dealers missing."
+  },
+  "cnh_status": {
+    "total_dealers": 2782,
+    "tasks_completed": 182,
+    "caseih_us_states_done": 51,
+    "nh_us_states_done": 51,
+    "caseih_eu_countries_done": 36,
+    "nh_eu_countries_done": 36,
+    "steyr_eu_countries_done": 8,
+    "steyr_missing_countries": [
+      "DK",
+      "EE",
+      "ES",
+      "FI",
+      "FR",
+      "GB",
+      "GR",
+      "HR",
+      "HU",
+      "IE",
+      "IS",
+      "IT",
+      "LT",
+      "LU",
+      "LV",
+      "MD",
+      "ME",
+      "MK",
+      "NL",
+      "NO",
+      "PL",
+      "PT",
+      "RO",
+      "RS",
+      "SE",
+      "SI",
+      "SK",
+      "UA"
+    ],
+    "brand_breakdown": {
+      "New Holland AG": 1245,
+      "Case IH": 1231,
+      "Steyr": 306
+    },
+    "top_countries": {
+      "US": 1348,
+      "DE": 269,
+      "FR": 232,
+      "AT": 154,
+      "NL": 102,
+      "ES": 81,
+      "BE": 78,
+      "PL": 67,
+      "GB": 59,
+      "NO": 45,
+      "DK": 42,
+      "PT": 42,
+      "FI": 41,
+      "IT": 41,
+      "IE": 28
+    },
+    "us_complete": true,
+    "eu_complete": true
+  },
+  "agco_status": {
+    "agco_brand_country": {
+      "Fendt": {
+        "DE": 386,
+        "FR": 191,
+        "US": 147,
+        "GB": 70,
+        "FI": 69,
+        "AT": 63,
+        "ES": 56,
+        "CA": 55,
+        "NO": 48,
+        "CH": 47
+      },
+      "Massey Ferguson": {
+        "DE": 331,
+        "FR": 228,
+        "US": 206,
+        "TR": 111,
+        "CA": 88,
+        "GB": 78,
+        "SE": 51,
+        "CH": 50,
+        "NO": 50,
+        "ES": 47
+      },
+      "Valtra": {
+        "DE": 249,
+        "FR": 191,
+        "GB": 61,
+        "AT": 56,
+        "SE": 54,
+        "ES": 43,
+        "IT": 38,
+        "NO": 33,
+        "PL": 28,
+        "NL": 26
+      }
+    },
+    "capped_suspects": []
+  }
+}

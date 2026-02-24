@@ -1,0 +1,1436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tractor Dealer Network Map</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #0f1117; color: #e0e0e0; }
+#app { display: flex; height: 100vh; }
+#sidebar {
+    width: 360px; min-width: 360px; background: #1a1d27;
+    border-right: 1px solid #2a2d3a; display: flex; flex-direction: column; overflow-y: auto;
+}
+#sidebar-header {
+    padding: 14px 16px; border-bottom: 1px solid #2a2d3a;
+    background: #1e2130; position: sticky; top: 0; z-index: 10;
+}
+#sidebar-header h1 { font-size: 17px; font-weight: 700; color: #fff; margin-bottom: 3px; }
+#sidebar-header .subtitle { font-size: 11px; color: #8888aa; }
+.stats-grid {
+    display: grid; grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 6px; padding: 10px 16px; border-bottom: 1px solid #2a2d3a;
+}
+.stat-card { background: #252836; border-radius: 6px; padding: 8px 6px; text-align: center; }
+.stat-card .value { font-size: 18px; font-weight: 700; color: #60a5fa; }
+.stat-card .label { font-size: 9px; color: #8888aa; text-transform: uppercase; letter-spacing: 0.4px; }
+#search-box {
+    width: 100%; padding: 8px 12px; background: #252836; border: 1px solid #3a3d4a;
+    border-radius: 6px; color: #e0e0e0; font-size: 13px; outline: none;
+}
+#search-box:focus { border-color: #60a5fa; }
+#search-box::placeholder { color: #555; }
+.filter-section { margin-bottom: 10px; }
+.filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
+.filter-header h4 { font-size: 11px; color: #8899aa; text-transform: uppercase; letter-spacing: 0.5px; }
+.sel-btns { display: flex; gap: 4px; }
+.sel-btn {
+    font-size: 9px; padding: 2px 6px; border-radius: 3px;
+    background: #252836; border: 1px solid #3a3d4a; color: #888; cursor: pointer; transition: all 0.15s;
+}
+.sel-btn:hover { color: #fff; border-color: #60a5fa; }
+.filter-chips { display: flex; flex-wrap: wrap; gap: 3px; }
+.chip {
+    display: inline-flex; align-items: center; gap: 3px;
+    padding: 3px 8px; border-radius: 12px; font-size: 10px; cursor: pointer;
+    border: 1px solid #3a3d4a; background: #252836; color: #999;
+    transition: all 0.15s; user-select: none;
+}
+.chip:hover { border-color: #60a5fa; }
+.chip.active { background: #1e3a5f; border-color: #60a5fa; color: #fff; }
+.chip .dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+.chip .count { color: #666; font-size: 9px; }
+#filters-wrap { padding: 10px 16px; border-bottom: 1px solid #2a2d3a; }
+
+.panel-section { padding: 10px 16px; border-bottom: 1px solid #2a2d3a; }
+.toggle-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.toggle-row label { font-size: 12px; color: #ccc; font-weight: 600; }
+.toggle {
+    position: relative; width: 36px; height: 20px;
+    background: #3a3d4a; border-radius: 10px; cursor: pointer; transition: background 0.2s;
+}
+.toggle.on { background: #2563eb; }
+.toggle::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform 0.2s;
+}
+.toggle.on::after { transform: translateX(16px); }
+.panel-controls { display: none; }
+.panel-controls.visible { display: block; }
+.control-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; }
+.control-row label { width: 65px; color: #888; flex-shrink: 0; }
+.control-row select, .control-row input[type=range] {
+    flex: 1; background: #252836; border: 1px solid #3a3d4a;
+    color: #ddd; border-radius: 4px; padding: 4px 6px; font-size: 11px;
+}
+.control-row input[type=range] { padding: 0; }
+.range-val { width: 50px; text-align: right; color: #60a5fa; font-weight: 600; font-size: 12px; }
+.checkbox-row {
+    display: flex; align-items: center; gap: 6px;
+    margin-bottom: 6px; font-size: 11px; color: #aaa; cursor: pointer; user-select: none;
+}
+.checkbox-row input[type=checkbox] { accent-color: #2563eb; width: 14px; height: 14px; cursor: pointer; }
+.panel-legend { display: flex; gap: 8px; margin-top: 8px; font-size: 10px; color: #888; flex-wrap: wrap; }
+.legend-item { display: flex; align-items: center; gap: 4px; }
+.legend-dot { width: 10px; height: 10px; border-radius: 2px; border: 1px solid rgba(255,255,255,0.2); }
+
+#brand-chart { padding: 10px 16px; border-bottom: 1px solid #2a2d3a; }
+.bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 2px; font-size: 10px; cursor: pointer; padding: 1px 0; }
+.bar-row:hover { background: #252836; }
+.bar-label { width: 90px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #aaa; }
+.bar-track { flex: 1; height: 12px; background: #1e2030; border-radius: 2px; overflow: hidden; }
+.bar-fill { height: 100%; border-radius: 2px; transition: width 0.3s; min-width: 2px; }
+.bar-count { width: 36px; font-size: 9px; color: #777; text-align: right; }
+
+#country-list { padding: 10px 16px; }
+#country-list h3 { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: #8888aa; margin-bottom: 6px; }
+.country-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 11px; cursor: pointer; border-bottom: 1px solid #1a1d25; }
+.country-row:hover { color: #60a5fa; }
+.country-row .cc { color: #666; font-size: 9px; margin-right: 4px; }
+
+#map-container { flex: 1; position: relative; }
+#map { width: 100%; height: 100%; }
+
+#info-panel {
+    position: absolute; top: 10px; right: 10px; z-index: 1000;
+    background: rgba(26, 29, 39, 0.96); border: 1px solid #3a3d4a;
+    border-radius: 10px; padding: 14px 16px;
+    min-width: 280px; max-width: 340px; max-height: 80vh; overflow-y: auto;
+    display: none; backdrop-filter: blur(8px);
+}
+#info-panel h3 { font-size: 14px; color: #fff; margin-bottom: 2px; padding-right: 20px; }
+#info-panel .brand-tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; margin-bottom: 8px; }
+#info-panel .detail { font-size: 12px; color: #99a; margin-bottom: 3px; }
+#info-panel .detail span { color: #ddd; }
+#info-close { position: absolute; top: 8px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 18px; }
+.nearby-section { margin-top: 10px; padding-top: 8px; border-top: 1px solid #2a2d3a; }
+.nearby-section h4 { font-size: 11px; color: #8899aa; margin-bottom: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+.nearby-item { font-size: 11px; padding: 3px 0; color: #99a; border-bottom: 1px solid #1a1d25; }
+.nearby-item .dist { color: #60a5fa; font-weight: 600; }
+.nearby-item .nbrand { font-size: 9px; padding: 1px 5px; border-radius: 8px; color: #fff; margin-left: 4px; }
+
+#view-toggle {
+    position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%);
+    z-index: 1000; display: flex; background: rgba(26, 29, 39, 0.92); border-radius: 8px;
+    border: 1px solid #3a3d4a; overflow: hidden; backdrop-filter: blur(8px);
+}
+.view-btn { padding: 7px 14px; font-size: 11px; cursor: pointer; background: transparent; border: none; color: #777; transition: all 0.15s; }
+.view-btn:hover { color: #ccc; }
+.view-btn.active { background: #1e3a5f; color: #fff; }
+
+#loading {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(15,17,23,0.9); z-index: 2000;
+    display: flex; align-items: center; justify-content: center; flex-direction: column; gap: 12px;
+}
+.spinner { width: 36px; height: 36px; border: 3px solid #2a2d3a; border-top-color: #60a5fa; border-radius: 50%; animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+/* Area Analysis */
+.draw-tools { display: flex; gap: 6px; margin-bottom: 8px; }
+.draw-btn {
+    flex: 1; padding: 6px 4px; font-size: 10px; text-align: center; cursor: pointer;
+    background: #252836; border: 1px solid #3a3d4a; border-radius: 5px; color: #aaa; transition: all 0.15s;
+}
+.draw-btn:hover { border-color: #60a5fa; color: #fff; }
+.draw-btn.active { background: #1e3a5f; border-color: #60a5fa; color: #fff; }
+.draw-btn svg { display: block; margin: 0 auto 3px; }
+.draw-hint { font-size: 10px; color: #666; margin-top: 4px; min-height: 14px; }
+
+#analysis-panel {
+    position: absolute; top: 10px; right: 10px; z-index: 999;
+    background: rgba(26, 29, 39, 0.96); border: 1px solid #3a3d4a;
+    border-radius: 10px; padding: 14px 16px;
+    min-width: 290px; max-width: 340px; max-height: 80vh; overflow-y: auto;
+    display: none; backdrop-filter: blur(8px);
+}
+#analysis-panel h3 { font-size: 13px; color: #fff; margin-bottom: 10px; padding-right: 20px; }
+#analysis-close { position: absolute; top: 8px; right: 10px; background: none; border: none; color: #888; cursor: pointer; font-size: 18px; }
+.analysis-section { margin-bottom: 12px; }
+.analysis-section h4 { font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: #8899aa; margin-bottom: 6px; }
+.analysis-bar-row { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; font-size: 10px; }
+.analysis-bar-label { width: 100px; text-align: right; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: #aaa; }
+.analysis-bar-track { flex: 1; height: 12px; background: #1e2030; border-radius: 2px; overflow: hidden; }
+.analysis-bar-fill { height: 100%; border-radius: 2px; min-width: 2px; }
+.analysis-bar-pct { width: 40px; font-size: 9px; color: #777; text-align: right; }
+.analysis-toggle-brand { font-size: 9px; color: #60a5fa; cursor: pointer; margin-left: 6px; }
+.analysis-toggle-brand:hover { text-decoration: underline; }
+.competition-bars { display: flex; height: 16px; border-radius: 3px; overflow: hidden; margin-top: 4px; }
+.comp-seg { display: flex; align-items: center; justify-content: center; font-size: 9px; color: #fff; font-weight: 600; }
+.analysis-stat { font-size: 11px; color: #ccc; margin-bottom: 4px; }
+.analysis-stat span { color: #60a5fa; font-weight: 600; }
+
+@media (max-width: 768px) { #sidebar { display: none; } }
+</style>
+</head>
+<body>
+<div id="app">
+<div id="sidebar">
+    <div id="sidebar-header">
+        <h1>Tractor Dealer Network</h1>
+        <div class="subtitle" id="header-subtitle">Loading...</div>
+    </div>
+    <div class="stats-grid">
+        <div class="stat-card"><div class="value" id="stat-total">-</div><div class="label">Total</div></div>
+        <div class="stat-card"><div class="value" id="stat-brands">-</div><div class="label">Brands</div></div>
+        <div class="stat-card"><div class="value" id="stat-countries">-</div><div class="label">Countries</div></div>
+        <div class="stat-card"><div class="value" id="stat-visible">-</div><div class="label">Showing</div></div>
+    </div>
+    <div id="filters-wrap">
+        <input type="text" id="search-box" placeholder="Search dealers, cities, countries..." style="margin-bottom:10px;">
+        <div class="filter-section">
+            <div class="filter-header"><h4>Parent Companies</h4><div class="sel-btns">
+                <button class="sel-btn" onclick="selectAll('parents','parent-chips')">All</button>
+                <button class="sel-btn" onclick="selectNone('parents','parent-chips')">None</button>
+            </div></div>
+            <div class="filter-chips" id="parent-chips"></div>
+        </div>
+        <div class="filter-section">
+            <div class="filter-header"><h4>Brands</h4><div class="sel-btns">
+                <button class="sel-btn" onclick="selectAll('brands','brand-chips')">All</button>
+                <button class="sel-btn" onclick="selectNone('brands','brand-chips')">None</button>
+            </div></div>
+            <div class="filter-chips" id="brand-chips"></div>
+        </div>
+        <div class="filter-section">
+            <div class="filter-header"><h4>Region</h4><div class="sel-btns">
+                <button class="sel-btn" onclick="selectAll('regions','region-chips')">All</button>
+                <button class="sel-btn" onclick="selectNone('regions','region-chips')">None</button>
+            </div></div>
+            <div class="filter-chips" id="region-chips"></div>
+        </div>
+    </div>
+
+    <!-- Territory Paint -->
+    <div class="panel-section" id="territory-panel">
+        <div class="toggle-row">
+            <label>Territory Paint</label>
+            <div class="toggle" id="territory-toggle" onclick="toggleTerritoryPaint()"></div>
+        </div>
+        <div class="panel-controls" id="territory-controls">
+            <div class="control-row">
+                <label>Color by</label>
+                <select id="territory-color-by" onchange="redrawOverlays()">
+                    <option value="parent" selected>Parent Company</option>
+                    <option value="brand">Brand</option>
+                </select>
+            </div>
+            <label class="checkbox-row">
+                <input type="checkbox" id="territory-hide-clusters" onchange="applyFilters()">
+                Hide cluster bubbles
+            </label>
+            <div class="panel-legend" id="territory-legend"></div>
+        </div>
+    </div>
+
+    <!-- Monopoly Paint -->
+    <div class="panel-section" id="monopoly-panel">
+        <div class="toggle-row">
+            <label>Monopoly Map</label>
+            <div class="toggle" id="monopoly-toggle" onclick="toggleMonopoly()"></div>
+        </div>
+        <div class="panel-controls" id="monopoly-controls">
+            <div class="control-row">
+                <label>Radius</label>
+                <input type="range" id="mono-radius" min="10" max="200" value="50" step="5"
+                    oninput="document.getElementById('mono-radius-val').textContent=this.value+' mi';"
+                    onchange="redrawOverlays()">
+                <span class="range-val" id="mono-radius-val">50 mi</span>
+            </div>
+            <div class="control-row">
+                <label>Scope</label>
+                <select id="mono-scope" onchange="redrawOverlays()">
+                    <option value="parent" selected>Parent Company</option>
+                    <option value="brand">Brand</option>
+                </select>
+            </div>
+            <div style="font-size:10px;color:#666;margin-top:4px;">
+                Highlights areas served by only one company/brand within the radius. Green = monopoly, yellow = duopoly.
+            </div>
+            <div class="panel-legend" style="margin-top:8px;">
+                <div class="legend-item"><div class="legend-dot" style="background:#22c55e;"></div> Sole company</div>
+                <div class="legend-item"><div class="legend-dot" style="background:#eab308;"></div> 2 companies</div>
+                <div class="legend-item"><div class="legend-dot" style="background:rgba(255,255,255,0.05);"></div> 3+ (competitive)</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Crop Overlay -->
+    <div class="panel-section" id="crop-panel">
+        <div class="toggle-row">
+            <label>Crop Map (US)</label>
+            <div class="toggle" id="crop-toggle" onclick="toggleCropLayer()"></div>
+        </div>
+        <div class="panel-controls" id="crop-controls">
+            <div class="control-row">
+                <label>Opacity</label>
+                <input type="range" id="crop-opacity" min="10" max="90" value="50" step="5"
+                    oninput="updateCropOpacity(this.value)">
+                <span class="range-val" id="crop-opacity-val">50%</span>
+            </div>
+            <div style="font-size:10px;color:#666;">USDA Cropland Data Layer - shows crop types across the US (corn, soy, wheat, etc.)</div>
+        </div>
+    </div>
+
+    <!-- Area Analysis -->
+    <div class="panel-section" id="area-panel">
+        <div class="toggle-row">
+            <label>Area Analysis</label>
+            <div class="toggle" id="area-toggle" onclick="toggleAreaAnalysis()"></div>
+        </div>
+        <div class="panel-controls" id="area-controls">
+            <div class="draw-tools">
+                <div class="draw-btn" id="draw-circle-btn" onclick="startCircleDraw()">
+                    <svg width="18" height="18" viewBox="0 0 18 18"><circle cx="9" cy="9" r="7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/></svg>
+                    Circle
+                </div>
+                <div class="draw-btn" id="draw-rect-btn" onclick="startRectDraw()">
+                    <svg width="18" height="18" viewBox="0 0 18 18"><rect x="2" y="3" width="14" height="12" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/></svg>
+                    Rectangle
+                </div>
+                <div class="draw-btn" id="draw-poly-btn" onclick="startPolyDraw()">
+                    <svg width="18" height="18" viewBox="0 0 18 18"><polygon points="9,1 16,7 14,16 4,16 2,7" fill="none" stroke="currentColor" stroke-width="1.5" stroke-dasharray="3,2"/></svg>
+                    Polygon
+                </div>
+            </div>
+            <div class="draw-hint" id="draw-hint">Select a tool, then draw on the map.</div>
+            <button class="sel-btn" id="clear-area-btn" style="display:none;margin-top:4px;" onclick="clearAnalysisShape()">Clear shape</button>
+        </div>
+    </div>
+
+    <div id="brand-chart">
+        <div style="font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#8888aa;margin-bottom:6px;">Dealers by Parent Company</div>
+        <div id="brand-bars"></div>
+    </div>
+    <div id="country-list">
+        <h3>Dealers by Country</h3>
+        <div id="country-rows"></div>
+    </div>
+</div>
+
+<div id="map-container">
+    <div id="map"></div>
+    <div id="info-panel">
+        <button id="info-close" onclick="closeInfo()">&times;</button>
+        <h3 id="info-name"></h3>
+        <div class="brand-tag" id="info-brand"></div>
+        <div id="info-details"></div>
+        <div id="info-nearby"></div>
+    </div>
+    <div id="analysis-panel">
+        <button id="analysis-close" onclick="closeAnalysisPanel()">&times;</button>
+        <h3>Area Analysis</h3>
+        <div id="analysis-content"></div>
+    </div>
+    <div id="view-toggle">
+        <button class="view-btn active" data-view="cluster">Clustered</button>
+        <button class="view-btn" data-view="heat">Heatmap</button>
+    </div>
+    <div id="loading"><div class="spinner"></div><div style="color:#888;font-size:13px;">Loading dealer data...</div></div>
+</div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://unpkg.com/d3-delaunay@6.0.4/dist/d3-delaunay.min.js"></script>
+<script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
+<script>
+const BRAND_COLORS = {
+    'John Deere':'#367c2b','Massey Ferguson':'#cc0000','Fendt':'#5a8c1e',
+    'CLAAS':'#8ab533','Valtra':'#b4202a','McCormick':'#c41e3a',
+    'Case IH':'#c41230','New Holland':'#003478','Landini':'#00529b',
+    'SAME':'#e35a00','Deutz-Fahr':'#009640','STEYR':'#e2001a',
+    'Lamborghini Tractors':'#d4af37','Kubota':'#f37021',
+};
+const PARENT_COLORS = {
+    'Deere & Company':'#367c2b','AGCO':'#cc0000','CNH Industrial':'#003478',
+    'CLAAS':'#8ab533','Argo Tractors':'#00529b','SDF Group':'#009640','Kubota':'#f37021',
+};
+const REGIONS = {
+    'North America':['US','CA','MX'],
+    'Western Europe':['DE','FR','GB','IT','ES','PT','NL','BE','LU','AT','CH','IE'],
+    'Northern Europe':['SE','NO','DK','FI','IS','EE','LV','LT'],
+    'Eastern Europe':['PL','CZ','SK','HU','RO','BG','HR','SI','RS','BA','UA','MD','AL','MK','ME'],
+    'Other':null,
+};
+const F = {brand:0,parent:1,name:2,addr:3,city:4,state:5,cc:6,cn:7,zip:8,lat:9,lng:10,phone:11,email:12,web:13,type:14,services:15};
+
+let allDealers = [], filteredDealers = [];
+let map, clusterGroup, heatLayer, dotsLayer, cropLayer;
+let activeFilters = { parents: new Set(), brands: new Set(), regions: new Set(), search: '' };
+let currentView = 'cluster';
+let monopolyOn = false, territoryPaintOn = false, cropOn = false;
+let allBrandsSet, allParentsSet;
+
+// Spatial index
+let spatialGrid = {};
+const GRID_SIZE = 1.0;
+
+// Canvas overlays
+let voronoiLayer = null, monopolyLayer = null;
+
+// Land boundaries for ocean clipping
+let landGeoJSON = null;
+
+// Load land boundaries
+fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json')
+    .then(r => r.json())
+    .then(topo => {
+        landGeoJSON = topojson.feature(topo, topo.objects.land);
+    })
+    .catch(() => {}); // fail silently, just won't clip
+
+function buildSpatialIndex() {
+    spatialGrid = {};
+    allDealers.forEach((d, i) => {
+        const gx = Math.floor(d[F.lat] / GRID_SIZE);
+        const gy = Math.floor(d[F.lng] / GRID_SIZE);
+        const key = `${gx},${gy}`;
+        if (!spatialGrid[key]) spatialGrid[key] = [];
+        spatialGrid[key].push(i);
+    });
+}
+
+function haversineMiles(lat1, lng1, lat2, lng2) {
+    const R = 3958.8;
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLng = (lng2 - lng1) * Math.PI / 180;
+    const a = Math.sin(dLat/2)**2 + Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+}
+
+function findNearby(dealer, radiusMiles, scope, serviceFilter) {
+    const lat = dealer[F.lat], lng = dealer[F.lng];
+    const cellRadius = Math.ceil(radiusMiles / 50) + 1;
+    const gx = Math.floor(lat / GRID_SIZE), gy = Math.floor(lng / GRID_SIZE);
+    const results = [];
+    for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+        for (let dy = -cellRadius; dy <= cellRadius; dy++) {
+            const cell = spatialGrid[`${gx+dx},${gy+dy}`];
+            if (!cell) continue;
+            for (const idx of cell) {
+                const d = allDealers[idx];
+                if (d === dealer) continue;
+                if (scope === 'brand' && d[F.brand] !== dealer[F.brand]) continue;
+                if (scope === 'parent' && d[F.parent] !== dealer[F.parent]) continue;
+                if (serviceFilter && serviceFilter !== 'any') {
+                    const svc = (d[F.services] || '').toLowerCase();
+                    if (serviceFilter === 'service' && !svc.includes('service') && !svc.includes('repair')) continue;
+                    if (serviceFilter === 'parts' && !svc.includes('parts')) continue;
+                    if (serviceFilter === 'sales' && !svc.includes('sales')) continue;
+                }
+                const dist = haversineMiles(lat, lng, d[F.lat], d[F.lng]);
+                if (dist <= radiusMiles) results.push({ dealer: d, dist });
+            }
+        }
+    }
+    results.sort((a, b) => a.dist - b.dist);
+    return results;
+}
+
+// Count unique parent companies or brands within radius of a dealer
+function countNearbyGroups(dealer, radiusMiles, scope) {
+    const lat = dealer[F.lat], lng = dealer[F.lng];
+    const cellRadius = Math.ceil(radiusMiles / 50) + 1;
+    const gx = Math.floor(lat / GRID_SIZE), gy = Math.floor(lng / GRID_SIZE);
+    const field = scope === 'brand' ? F.brand : F.parent;
+    const groups = new Set();
+    groups.add(dealer[field]); // include self
+    for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+        for (let dy = -cellRadius; dy <= cellRadius; dy++) {
+            const cell = spatialGrid[`${gx+dx},${gy+dy}`];
+            if (!cell) continue;
+            for (const idx of cell) {
+                const d = allDealers[idx];
+                if (d === dealer) continue;
+                const dist = haversineMiles(lat, lng, d[F.lat], d[F.lng]);
+                if (dist <= radiusMiles) groups.add(d[field]);
+            }
+        }
+    }
+    return groups.size;
+}
+
+// Map init
+map = L.map('map', { center: [48, 10], zoom: 4, preferCanvas: true });
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OSM &copy; CARTO', maxZoom: 19,
+}).addTo(map);
+
+// Refresh dots on zoom/move when clusters hidden
+map.on('zoomend moveend', () => {
+    const hideClusters = territoryPaintOn && document.getElementById('territory-hide-clusters').checked;
+    if (hideClusters && currentView === 'cluster') {
+        if (dotsLayer) { map.removeLayer(dotsLayer); dotsLayer = null; }
+        dotsLayer = L.layerGroup();
+        if (map.getZoom() >= 8) {
+            const bounds = map.getBounds();
+            filteredDealers.forEach(d => {
+                if (d[F.lat] < bounds.getSouth() || d[F.lat] > bounds.getNorth() ||
+                    d[F.lng] < bounds.getWest() || d[F.lng] > bounds.getEast()) return;
+                const m = L.marker([d[F.lat], d[F.lng]], { icon: dealerIcon(d, true), brand: d[F.brand], parent: d[F.parent] });
+                m.on('click', () => showInfo(d));
+                dotsLayer.addLayer(m);
+            });
+        }
+        map.addLayer(dotsLayer);
+    }
+});
+
+function dealerIcon(d, tiny) {
+    const color = PARENT_COLORS[d[F.parent]] || BRAND_COLORS[d[F.brand]] || '#888';
+    const size = tiny ? 5 : 10;
+    const border = tiny ? '1px solid rgba(255,255,255,0.3)' : '1.5px solid rgba(255,255,255,0.5)';
+    return L.divIcon({
+        className: '',
+        html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${border};box-shadow:0 0 ${tiny?2:4}px ${color};"></div>`,
+        iconSize: [size, size], iconAnchor: [size/2, size/2],
+    });
+}
+
+// ===== Canvas Voronoi Overlay with Land Clipping =====
+
+class CanvasVoronoiOverlay extends L.Layer {
+    onAdd(map) {
+        this._map = map;
+        this._canvas = L.DomUtil.create('canvas', 'voronoi-canvas');
+        this._canvas.style.position = 'absolute';
+        this._canvas.style.pointerEvents = 'none';
+        this._canvas.style.zIndex = '250';
+        map.getPanes().overlayPane.appendChild(this._canvas);
+        map.on('moveend zoomend resize', this._redraw, this);
+        this._redraw();
+        return this;
+    }
+    onRemove(map) {
+        L.DomUtil.remove(this._canvas);
+        map.off('moveend zoomend resize', this._redraw, this);
+        return this;
+    }
+    setData(dealers, colorFn, opacity) {
+        this._dealers = dealers;
+        this._colorFn = colorFn;
+        this._opacity = opacity || 0.18;
+        if (this._map) this._redraw();
+    }
+    _buildLandClip(ctx, map, w, h) {
+        if (!landGeoJSON) return false;
+        ctx.beginPath();
+        const features = landGeoJSON.features || [landGeoJSON];
+        features.forEach(feature => {
+            const geom = feature.geometry || feature;
+            const polys = geom.type === 'MultiPolygon' ? geom.coordinates : [geom.coordinates];
+            polys.forEach(polygon => {
+                polygon.forEach(ring => {
+                    for (let i = 0; i < ring.length; i++) {
+                        const pt = map.latLngToContainerPoint([ring[i][1], ring[i][0]]);
+                        if (i === 0) ctx.moveTo(pt.x, pt.y);
+                        else ctx.lineTo(pt.x, pt.y);
+                    }
+                    ctx.closePath();
+                });
+            });
+        });
+        return true;
+    }
+    _redraw() {
+        if (!this._dealers || !this._dealers.length || !this._colorFn) return;
+        const map = this._map;
+        const size = map.getSize();
+        const canvas = this._canvas;
+        canvas.width = size.x;
+        canvas.height = size.y;
+        const topLeft = map.containerPointToLayerPoint([0, 0]);
+        L.DomUtil.setPosition(canvas, topLeft);
+
+        const ctx = canvas.getContext('2d');
+        ctx.clearRect(0, 0, size.x, size.y);
+
+        const dealers = this._dealers;
+        const colorFn = this._colorFn;
+
+        // Project points
+        const points = new Float64Array(dealers.length * 2);
+        const colors = new Array(dealers.length);
+        for (let i = 0; i < dealers.length; i++) {
+            const d = dealers[i];
+            const pt = map.latLngToContainerPoint([d[F.lat], d[F.lng]]);
+            points[i * 2] = pt.x;
+            points[i * 2 + 1] = pt.y;
+            colors[i] = colorFn(d);
+        }
+
+        const delaunay = new d3.Delaunay(points);
+        const voronoi = delaunay.voronoi([0, 0, size.x, size.y]);
+
+        // Clip to land
+        ctx.save();
+        if (this._buildLandClip(ctx, map, size.x, size.y)) {
+            ctx.clip();
+        }
+
+        ctx.globalAlpha = this._opacity;
+        for (let i = 0; i < dealers.length; i++) {
+            if (!colors[i]) continue; // null = skip (transparent)
+            const cell = voronoi.cellPolygon(i);
+            if (!cell) continue;
+            ctx.beginPath();
+            ctx.moveTo(cell[0][0], cell[0][1]);
+            for (let j = 1; j < cell.length; j++) ctx.lineTo(cell[j][0], cell[j][1]);
+            ctx.closePath();
+            ctx.fillStyle = colors[i];
+            ctx.fill();
+        }
+
+        // Thin borders
+        ctx.globalAlpha = 0.06;
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 0.5;
+        for (let i = 0; i < dealers.length; i++) {
+            if (!colors[i]) continue;
+            const cell = voronoi.cellPolygon(i);
+            if (!cell) continue;
+            ctx.beginPath();
+            ctx.moveTo(cell[0][0], cell[0][1]);
+            for (let j = 1; j < cell.length; j++) ctx.lineTo(cell[j][0], cell[j][1]);
+            ctx.closePath();
+            ctx.stroke();
+        }
+        ctx.restore();
+    }
+}
+
+// ===== Territory Paint =====
+
+function toggleTerritoryPaint() {
+    territoryPaintOn = !territoryPaintOn;
+    document.getElementById('territory-toggle').classList.toggle('on', territoryPaintOn);
+    document.getElementById('territory-controls').classList.toggle('visible', territoryPaintOn);
+    if (!territoryPaintOn) {
+        if (voronoiLayer) { map.removeLayer(voronoiLayer); voronoiLayer = null; }
+        document.getElementById('territory-hide-clusters').checked = false;
+        document.getElementById('territory-legend').innerHTML = '';
+    }
+    applyFilters();
+}
+
+function redrawOverlays() {
+    // Territory paint
+    if (territoryPaintOn && filteredDealers.length) {
+        const colorBy = document.getElementById('territory-color-by').value;
+        const colorMap = colorBy === 'brand' ? BRAND_COLORS : PARENT_COLORS;
+        const colorField = colorBy === 'brand' ? F.brand : F.parent;
+        const colorFn = d => colorMap[d[colorField]] || '#888';
+
+        if (!voronoiLayer) { voronoiLayer = new CanvasVoronoiOverlay(); map.addLayer(voronoiLayer); }
+        voronoiLayer.setData(filteredDealers, colorFn, 0.18);
+        buildTerritoryLegend(colorBy);
+    }
+
+    // Monopoly paint
+    if (monopolyOn && filteredDealers.length) {
+        const radius = parseInt(document.getElementById('mono-radius').value) || 50;
+        const scope = document.getElementById('mono-scope').value;
+
+        // Precompute monopoly status
+        const monopolyColors = new Map();
+        filteredDealers.forEach(d => {
+            const n = countNearbyGroups(d, radius, scope);
+            if (n === 1) monopolyColors.set(d, '#22c55e');       // sole company
+            else if (n === 2) monopolyColors.set(d, '#eab308');   // duopoly
+            else monopolyColors.set(d, null);                     // competitive - transparent
+        });
+
+        const colorFn = d => monopolyColors.get(d) || null;
+        if (!monopolyLayer) { monopolyLayer = new CanvasVoronoiOverlay(); map.addLayer(monopolyLayer); }
+        monopolyLayer.setData(filteredDealers, colorFn, 0.30);
+    }
+}
+
+function buildTerritoryLegend(colorBy) {
+    const el = document.getElementById('territory-legend');
+    const colorMap = colorBy === 'brand' ? BRAND_COLORS : PARENT_COLORS;
+    const seen = new Set();
+    filteredDealers.forEach(d => seen.add(d[colorBy === 'brand' ? F.brand : F.parent]));
+    el.innerHTML = [...seen].sort().map(name => {
+        const c = colorMap[name] || '#888';
+        return `<div class="legend-item"><div class="legend-dot" style="background:${c};"></div> ${name}</div>`;
+    }).join('');
+}
+
+// ===== Monopoly Paint =====
+
+function toggleMonopoly() {
+    monopolyOn = !monopolyOn;
+    document.getElementById('monopoly-toggle').classList.toggle('on', monopolyOn);
+    document.getElementById('monopoly-controls').classList.toggle('visible', monopolyOn);
+    if (!monopolyOn) {
+        if (monopolyLayer) { map.removeLayer(monopolyLayer); monopolyLayer = null; }
+    } else {
+        redrawOverlays();
+    }
+}
+
+// ===== Crop Layer (USDA CropScape WMS) =====
+
+function toggleCropLayer() {
+    cropOn = !cropOn;
+    document.getElementById('crop-toggle').classList.toggle('on', cropOn);
+    document.getElementById('crop-controls').classList.toggle('visible', cropOn);
+    if (cropOn) {
+        if (!cropLayer) {
+            cropLayer = L.tileLayer.wms('https://nassgeodata.gmu.edu/CropScapeService/wms_cdlall.cgi', {
+                layers: 'cdl_2023',
+                format: 'image/png',
+                transparent: true,
+                opacity: 0.5,
+                attribution: 'USDA NASS CDL',
+            });
+        }
+        map.addLayer(cropLayer);
+    } else {
+        if (cropLayer) map.removeLayer(cropLayer);
+    }
+}
+
+function updateCropOpacity(val) {
+    document.getElementById('crop-opacity-val').textContent = val + '%';
+    if (cropLayer) cropLayer.setOpacity(val / 100);
+}
+
+// ===== Load Data =====
+
+fetch('processed/dealers_map_data.json')
+    .then(r => r.json())
+    .then(data => {
+        allDealers = data.dealers;
+        buildSpatialIndex();
+        document.getElementById('loading').style.display = 'none';
+        initUI();
+        applyFilters();
+    })
+    .catch(err => {
+        document.getElementById('loading').innerHTML = `<div style="color:#f66;">Error: ${err.message}</div>`;
+    });
+
+function initUI() {
+    const brands = new Map(), parents = new Map(), countries = new Map();
+    allDealers.forEach(d => {
+        brands.set(d[F.brand], (brands.get(d[F.brand])||0)+1);
+        parents.set(d[F.parent], (parents.get(d[F.parent])||0)+1);
+        const cc = d[F.cc];
+        countries.set(cc, { count: (countries.get(cc)?.count||0)+1, name: d[F.cn] || cc });
+    });
+    allBrandsSet = brands;
+    allParentsSet = parents;
+
+    document.getElementById('stat-total').textContent = allDealers.length.toLocaleString();
+    document.getElementById('stat-brands').textContent = brands.size;
+    document.getElementById('stat-countries').textContent = countries.size;
+    document.getElementById('header-subtitle').textContent = `${allDealers.length.toLocaleString()} dealers, ${countries.size} countries`;
+
+    const pc = document.getElementById('parent-chips');
+    [...parents.entries()].sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
+        const chip = mkChip(name, PARENT_COLORS[name], count);
+        chip.onclick = () => toggleChip(chip, 'parents', name);
+        pc.appendChild(chip); activeFilters.parents.add(name);
+    });
+
+    const bc = document.getElementById('brand-chips');
+    [...brands.entries()].sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
+        const chip = mkChip(name, BRAND_COLORS[name], count);
+        chip.onclick = () => toggleChip(chip, 'brands', name);
+        bc.appendChild(chip); activeFilters.brands.add(name);
+    });
+
+    const rc = document.getElementById('region-chips');
+    Object.keys(REGIONS).forEach(region => {
+        const chip = document.createElement('div');
+        chip.className = 'chip active'; chip.dataset.value = region; chip.textContent = region;
+        chip.onclick = () => toggleChip(chip, 'regions', region);
+        rc.appendChild(chip); activeFilters.regions.add(region);
+    });
+
+    const maxP = Math.max(...parents.values());
+    const bb = document.getElementById('brand-bars');
+    [...parents.entries()].sort((a,b) => b[1]-a[1]).forEach(([name, count]) => {
+        const color = PARENT_COLORS[name] || '#888';
+        const pct = (count/maxP*100).toFixed(1);
+        const row = document.createElement('div'); row.className = 'bar-row';
+        row.innerHTML = `<div class="bar-label">${name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div><div class="bar-count">${count.toLocaleString()}</div>`;
+        row.onclick = () => soloFilter('parents', 'parent-chips', name, parents);
+        bb.appendChild(row);
+    });
+
+    const cr = document.getElementById('country-rows');
+    [...countries.entries()].sort((a,b) => b[1].count - a[1].count).slice(0, 30).forEach(([cc, info]) => {
+        const row = document.createElement('div'); row.className = 'country-row';
+        row.innerHTML = `<div><span class="cc">${cc}</span>${info.name}</div><div>${info.count.toLocaleString()}</div>`;
+        row.onclick = () => {
+            const pts = allDealers.filter(d => d[F.cc] === cc);
+            if (pts.length) map.fitBounds(L.latLngBounds(pts.map(d => [d[F.lat], d[F.lng]])), {padding:[40,40]});
+        };
+        cr.appendChild(row);
+    });
+
+    let st;
+    document.getElementById('search-box').addEventListener('input', e => {
+        clearTimeout(st);
+        st = setTimeout(() => { activeFilters.search = e.target.value.toLowerCase().trim(); applyFilters(); }, 200);
+    });
+
+    document.querySelectorAll('.view-btn').forEach(btn => {
+        btn.onclick = () => {
+            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active'); currentView = btn.dataset.view; applyFilters();
+        };
+    });
+}
+
+function mkChip(name, color, count) {
+    const chip = document.createElement('div');
+    chip.className = 'chip active'; chip.dataset.value = name;
+    chip.innerHTML = `<span class="dot" style="background:${color||'#888'}"></span>${name} <span class="count">${count.toLocaleString()}</span>`;
+    return chip;
+}
+function toggleChip(chip, key, value) {
+    chip.classList.toggle('active');
+    if (chip.classList.contains('active')) activeFilters[key].add(value);
+    else activeFilters[key].delete(value);
+    applyFilters();
+}
+function selectAll(key, containerId) {
+    const container = document.getElementById(containerId);
+    container.querySelectorAll('.chip').forEach(c => { c.classList.add('active'); activeFilters[key].add(c.dataset.value); });
+    applyFilters();
+}
+function selectNone(key, containerId) {
+    const container = document.getElementById(containerId);
+    container.querySelectorAll('.chip').forEach(c => { c.classList.remove('active'); activeFilters[key].delete(c.dataset.value); });
+    applyFilters();
+}
+function soloFilter(key, containerId, value, allMap) {
+    const container = document.getElementById(containerId);
+    const allActive = activeFilters[key].size === allMap.size;
+    if (allActive || (activeFilters[key].size === 1 && !activeFilters[key].has(value))) {
+        container.querySelectorAll('.chip').forEach(c => { c.classList.remove('active'); activeFilters[key].delete(c.dataset.value); });
+        const chip = container.querySelector(`[data-value="${CSS.escape(value)}"]`);
+        if (chip) { chip.classList.add('active'); activeFilters[key].add(value); }
+    } else if (activeFilters[key].size === 1 && activeFilters[key].has(value)) {
+        container.querySelectorAll('.chip').forEach(c => { c.classList.add('active'); activeFilters[key].add(c.dataset.value); });
+    } else {
+        container.querySelectorAll('.chip').forEach(c => { c.classList.remove('active'); activeFilters[key].delete(c.dataset.value); });
+        const chip = container.querySelector(`[data-value="${CSS.escape(value)}"]`);
+        if (chip) { chip.classList.add('active'); activeFilters[key].add(value); }
+    }
+    applyFilters();
+}
+function getRegion(cc) {
+    for (const [region, codes] of Object.entries(REGIONS)) {
+        if (codes === null) continue;
+        if (codes.includes(cc)) return region;
+    }
+    return 'Other';
+}
+
+function applyFilters() {
+    filteredDealers = allDealers.filter(d => {
+        if (!activeFilters.parents.has(d[F.parent])) return false;
+        if (!activeFilters.brands.has(d[F.brand])) return false;
+        if (!activeFilters.regions.has(getRegion(d[F.cc]))) return false;
+        if (activeFilters.search) {
+            const hay = `${d[F.name]} ${d[F.city]} ${d[F.cn]} ${d[F.cc]} ${d[F.brand]} ${d[F.state]}`.toLowerCase();
+            if (!hay.includes(activeFilters.search)) return false;
+        }
+        return true;
+    });
+
+    document.getElementById('stat-visible').textContent = filteredDealers.length.toLocaleString();
+
+    if (clusterGroup) { map.removeLayer(clusterGroup); clusterGroup = null; }
+    if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
+    if (dotsLayer) { map.removeLayer(dotsLayer); dotsLayer = null; }
+
+    const hideClusters = territoryPaintOn && document.getElementById('territory-hide-clusters').checked;
+    const useTinyDots = territoryPaintOn || monopolyOn;
+
+    if (currentView === 'cluster') {
+        if (!hideClusters) {
+            clusterGroup = L.markerClusterGroup({
+                maxClusterRadius: 50, spiderfyOnMaxZoom: true,
+                showCoverageOnHover: false, disableClusteringAtZoom: 12, chunkedLoading: true,
+                iconCreateFunction: function(cluster) {
+                    const count = cluster.getChildCount();
+                    let size = count < 20 ? 28 : count < 100 ? 36 : 44;
+                    const children = cluster.getAllChildMarkers();
+                    const pc = {};
+                    children.forEach(m => { pc[m.options.parent] = (pc[m.options.parent]||0)+1; });
+                    const top = Object.entries(pc).sort((a,b) => b[1]-a[1])[0][0];
+                    const color = PARENT_COLORS[top] || '#60a5fa';
+                    return L.divIcon({
+                        html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${size<34?10:12}px;font-weight:700;border:2px solid rgba(255,255,255,0.35);box-shadow:0 2px 6px rgba(0,0,0,0.4);">${count>=1000?(count/1000).toFixed(1)+'k':count}</div>`,
+                        className: '', iconSize: [size, size],
+                    });
+                }
+            });
+            filteredDealers.forEach(d => {
+                const m = L.marker([d[F.lat], d[F.lng]], { icon: dealerIcon(d, useTinyDots), brand: d[F.brand], parent: d[F.parent] });
+                m.on('click', () => showInfo(d));
+                clusterGroup.addLayer(m);
+            });
+            map.addLayer(clusterGroup);
+        } else {
+            dotsLayer = L.layerGroup();
+            if (map.getZoom() >= 8) {
+                const bounds = map.getBounds();
+                filteredDealers.forEach(d => {
+                    if (d[F.lat] < bounds.getSouth() || d[F.lat] > bounds.getNorth() ||
+                        d[F.lng] < bounds.getWest() || d[F.lng] > bounds.getEast()) return;
+                    const m = L.marker([d[F.lat], d[F.lng]], { icon: dealerIcon(d, true), brand: d[F.brand], parent: d[F.parent] });
+                    m.on('click', () => showInfo(d));
+                    dotsLayer.addLayer(m);
+                });
+            }
+            map.addLayer(dotsLayer);
+        }
+    } else {
+        const hd = filteredDealers.map(d => [d[F.lat], d[F.lng], 0.5]);
+        heatLayer = L.heatLayer(hd, {
+            radius: 18, blur: 20, maxZoom: 10, max: 1.0,
+            gradient: {0.2:'#1a1a8c',0.4:'#3366cc',0.6:'#66b3ff',0.8:'#ffcc00',1.0:'#ff3300'}
+        });
+        map.addLayer(heatLayer);
+    }
+
+    // Remove stale overlays
+    if (!territoryPaintOn && voronoiLayer) { map.removeLayer(voronoiLayer); voronoiLayer = null; document.getElementById('territory-legend').innerHTML = ''; }
+    if (!monopolyOn && monopolyLayer) { map.removeLayer(monopolyLayer); monopolyLayer = null; }
+
+    // Redraw active overlays
+    if (territoryPaintOn || monopolyOn) redrawOverlays();
+}
+
+function showInfo(d) {
+    const panel = document.getElementById('info-panel');
+    document.getElementById('info-name').textContent = d[F.name];
+    const brandTag = document.getElementById('info-brand');
+    const color = BRAND_COLORS[d[F.brand]] || '#888';
+    brandTag.textContent = `${d[F.brand]} (${d[F.parent]})`;
+    brandTag.style.background = color; brandTag.style.color = '#fff';
+
+    let html = '';
+    if (d[F.addr]) html += `<div class="detail"><span>${d[F.addr]}</span></div>`;
+    const loc = [d[F.city], d[F.state], d[F.zip], d[F.cn]].filter(Boolean).join(', ');
+    if (loc) html += `<div class="detail"><span>${loc}</span></div>`;
+    if (d[F.phone]) html += `<div class="detail">Phone: <span>${d[F.phone]}</span></div>`;
+    if (d[F.email]) html += `<div class="detail">Email: <span>${d[F.email]}</span></div>`;
+    if (d[F.web]) {
+        let url = d[F.web]; if (!url.startsWith('http')) url = 'https://' + url;
+        html += `<div class="detail">Web: <span><a href="${url}" target="_blank" style="color:#60a5fa;">${d[F.web].replace(/^https?:\/\//,'').slice(0,40)}</a></span></div>`;
+    }
+    if (d[F.type]) html += `<div class="detail">Type: <span>${d[F.type]}</span></div>`;
+    if (d[F.services]) html += `<div class="detail">Services: <span>${d[F.services]}</span></div>`;
+    document.getElementById('info-details').innerHTML = html;
+
+    // Nearby analysis
+    const radius = parseInt(document.getElementById('mono-radius').value) || 50;
+    const scope = document.getElementById('mono-scope').value;
+    const nearby = findNearby(d, radius, scope, 'any');
+
+    const groups = new Set();
+    groups.add(d[scope === 'brand' ? F.brand : F.parent]);
+    nearby.forEach(n => groups.add(n.dealer[scope === 'brand' ? F.brand : F.parent]));
+
+    let nearbyHtml = `<div class="nearby-section">`;
+    nearbyHtml += `<h4>${groups.size} ${scope === 'brand' ? 'brand' : 'parent co.'}${groups.size!==1?'s':''} within ${radius} mi</h4>`;
+    if (groups.size === 1) {
+        nearbyHtml += `<div style="color:#22c55e;font-size:12px;font-weight:600;margin:4px 0;">Monopoly - sole ${scope === 'brand' ? 'brand' : 'company'} in range</div>`;
+    }
+    nearbyHtml += `<div style="font-size:10px;color:#666;margin-bottom:4px;">${nearby.length} other dealer${nearby.length!==1?'s':''} nearby</div>`;
+
+    nearby.slice(0, 8).forEach(n => {
+        const bc = BRAND_COLORS[n.dealer[F.brand]] || '#888';
+        nearbyHtml += `<div class="nearby-item"><span class="dist">${n.dist.toFixed(1)} mi</span> ${n.dealer[F.name]}<span class="nbrand" style="background:${bc}">${n.dealer[F.brand]}</span></div>`;
+    });
+    if (nearby.length > 8) nearbyHtml += `<div class="nearby-item" style="color:#666;">+ ${nearby.length - 8} more...</div>`;
+    nearbyHtml += `</div>`;
+    document.getElementById('info-nearby').innerHTML = nearbyHtml;
+    panel.style.display = 'block';
+}
+
+function closeInfo() { document.getElementById('info-panel').style.display = 'none'; }
+
+// ===== Area Analysis =====
+
+let areaAnalysisOn = false;
+let drawMode = null; // 'circle' | 'rect' | 'poly' | null
+let analysisShape = null; // Leaflet layer (circle, rectangle, or polygon)
+let analysisShapeData = null; // { type, center, radius } | { type, bounds } | { type, latlngs }
+let drawState = {}; // transient drawing state
+let analysisBrandView = { dealers: false, territory: false }; // toggle parent vs brand
+
+function toggleAreaAnalysis() {
+    areaAnalysisOn = !areaAnalysisOn;
+    document.getElementById('area-toggle').classList.toggle('on', areaAnalysisOn);
+    document.getElementById('area-controls').classList.toggle('visible', areaAnalysisOn);
+    if (!areaAnalysisOn) {
+        cancelDraw();
+        clearAnalysisShape();
+    }
+}
+
+function cancelDraw() {
+    drawMode = null;
+    drawState = {};
+    document.querySelectorAll('.draw-btn').forEach(b => b.classList.remove('active'));
+    document.getElementById('draw-hint').textContent = 'Select a tool, then draw on the map.';
+    map.getContainer().style.cursor = '';
+    map.off('mousedown', onDrawMouseDown);
+    map.off('mousemove', onDrawMouseMove);
+    map.off('mouseup', onDrawMouseUp);
+    map.off('click', onPolyClick);
+    map.off('dblclick', onPolyDblClick);
+    if (drawState._previewLayer) { map.removeLayer(drawState._previewLayer); drawState._previewLayer = null; }
+    map.dragging.enable();
+    map.doubleClickZoom.enable();
+}
+
+function clearAnalysisShape() {
+    if (analysisShape) { map.removeLayer(analysisShape); analysisShape = null; }
+    analysisShapeData = null;
+    document.getElementById('analysis-panel').style.display = 'none';
+    document.getElementById('clear-area-btn').style.display = 'none';
+}
+
+function closeAnalysisPanel() {
+    document.getElementById('analysis-panel').style.display = 'none';
+}
+
+// -- Drawing: Circle --
+function startCircleDraw() {
+    cancelDraw();
+    if (analysisShape) { map.removeLayer(analysisShape); analysisShape = null; }
+    drawMode = 'circle';
+    document.getElementById('draw-circle-btn').classList.add('active');
+    document.getElementById('draw-hint').textContent = 'Click and drag to draw a circle.';
+    map.getContainer().style.cursor = 'crosshair';
+    map.on('mousedown', onDrawMouseDown);
+}
+
+function startRectDraw() {
+    cancelDraw();
+    if (analysisShape) { map.removeLayer(analysisShape); analysisShape = null; }
+    drawMode = 'rect';
+    document.getElementById('draw-rect-btn').classList.add('active');
+    document.getElementById('draw-hint').textContent = 'Click and drag to draw a rectangle.';
+    map.getContainer().style.cursor = 'crosshair';
+    map.on('mousedown', onDrawMouseDown);
+}
+
+function startPolyDraw() {
+    cancelDraw();
+    if (analysisShape) { map.removeLayer(analysisShape); analysisShape = null; }
+    drawMode = 'poly';
+    drawState = { points: [], _previewLayer: null };
+    document.getElementById('draw-poly-btn').classList.add('active');
+    document.getElementById('draw-hint').textContent = 'Click to add vertices. Double-click to close.';
+    map.getContainer().style.cursor = 'crosshair';
+    map.doubleClickZoom.disable();
+    map.on('click', onPolyClick);
+    map.on('dblclick', onPolyDblClick);
+    map.on('mousemove', onPolyPreview);
+}
+
+const SHAPE_STYLE = { color: '#60a5fa', weight: 2, dashArray: '6,4', fillColor: '#60a5fa', fillOpacity: 0.06 };
+
+function onDrawMouseDown(e) {
+    if (drawMode !== 'circle' && drawMode !== 'rect') return;
+    L.DomEvent.stopPropagation(e);
+    drawState.startLatLng = e.latlng;
+    map.dragging.disable();
+    map.on('mousemove', onDrawMouseMove);
+    map.on('mouseup', onDrawMouseUp);
+}
+
+function onDrawMouseMove(e) {
+    if (!drawState.startLatLng) return;
+    if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+    if (drawMode === 'circle') {
+        const radius = drawState.startLatLng.distanceTo(e.latlng);
+        drawState._previewLayer = L.circle(drawState.startLatLng, { radius, ...SHAPE_STYLE }).addTo(map);
+    } else if (drawMode === 'rect') {
+        const bounds = L.latLngBounds(drawState.startLatLng, e.latlng);
+        drawState._previewLayer = L.rectangle(bounds, SHAPE_STYLE).addTo(map);
+    }
+}
+
+function onDrawMouseUp(e) {
+    if (!drawState.startLatLng) return;
+    map.off('mousemove', onDrawMouseMove);
+    map.off('mouseup', onDrawMouseUp);
+    map.dragging.enable();
+
+    if (drawMode === 'circle') {
+        const radius = drawState.startLatLng.distanceTo(e.latlng);
+        if (radius < 1000) { // too small, ignore
+            if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+            drawState = {};
+            return;
+        }
+        if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+        analysisShape = L.circle(drawState.startLatLng, { radius, ...SHAPE_STYLE }).addTo(map);
+        analysisShapeData = { type: 'circle', center: drawState.startLatLng, radius };
+    } else if (drawMode === 'rect') {
+        const bounds = L.latLngBounds(drawState.startLatLng, e.latlng);
+        const size = bounds.getNorthEast().distanceTo(bounds.getSouthWest());
+        if (size < 1000) {
+            if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+            drawState = {};
+            return;
+        }
+        if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+        analysisShape = L.rectangle(bounds, SHAPE_STYLE).addTo(map);
+        analysisShapeData = { type: 'rect', bounds };
+    }
+
+    cancelDraw();
+    document.getElementById('clear-area-btn').style.display = '';
+    computeAreaAnalysis();
+}
+
+// -- Drawing: Polygon --
+function onPolyClick(e) {
+    if (drawMode !== 'poly') return;
+    drawState.points.push(e.latlng);
+    updatePolyPreview();
+}
+
+function onPolyPreview(e) {
+    if (drawMode !== 'poly' || !drawState.points.length) return;
+    drawState._mouseLatLng = e.latlng;
+    updatePolyPreview();
+}
+
+function updatePolyPreview() {
+    if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+    const pts = [...drawState.points];
+    if (drawState._mouseLatLng) pts.push(drawState._mouseLatLng);
+    if (pts.length >= 2) {
+        drawState._previewLayer = L.polyline(pts, { color: '#60a5fa', weight: 2, dashArray: '6,4' }).addTo(map);
+    }
+}
+
+function onPolyDblClick(e) {
+    if (drawMode !== 'poly') return;
+    L.DomEvent.stopPropagation(e);
+    L.DomEvent.preventDefault(e);
+    if (drawState.points.length < 3) return;
+    if (drawState._previewLayer) map.removeLayer(drawState._previewLayer);
+    map.off('mousemove', onPolyPreview);
+    analysisShape = L.polygon(drawState.points, SHAPE_STYLE).addTo(map);
+    analysisShapeData = { type: 'poly', latlngs: [...drawState.points] };
+    cancelDraw();
+    document.getElementById('clear-area-btn').style.display = '';
+    computeAreaAnalysis();
+}
+
+// -- Point-in-shape test --
+function pointInAnalysisShape(lat, lng) {
+    if (!analysisShapeData) return false;
+    const sd = analysisShapeData;
+    if (sd.type === 'circle') {
+        return sd.center.distanceTo(L.latLng(lat, lng)) <= sd.radius;
+    } else if (sd.type === 'rect') {
+        return sd.bounds.contains(L.latLng(lat, lng));
+    } else if (sd.type === 'poly') {
+        return pointInPolygon(lat, lng, sd.latlngs);
+    }
+    return false;
+}
+
+function pointInPolygon(lat, lng, latlngs) {
+    let inside = false;
+    for (let i = 0, j = latlngs.length - 1; i < latlngs.length; j = i++) {
+        const xi = latlngs[i].lat, yi = latlngs[i].lng;
+        const xj = latlngs[j].lat, yj = latlngs[j].lng;
+        if ((yi > lng) !== (yj > lng) && lat < (xj - xi) * (lng - yi) / (yj - yi) + xi) {
+            inside = !inside;
+        }
+    }
+    return inside;
+}
+
+// -- Grid sampling --
+function getShapeBounds() {
+    if (!analysisShapeData) return null;
+    const sd = analysisShapeData;
+    if (sd.type === 'circle') {
+        const c = sd.center;
+        const rDeg = sd.radius / 111320; // rough meters to degrees
+        return { south: c.lat - rDeg, north: c.lat + rDeg, west: c.lng - rDeg, east: c.lng + rDeg };
+    } else if (sd.type === 'rect') {
+        return { south: sd.bounds.getSouth(), north: sd.bounds.getNorth(), west: sd.bounds.getWest(), east: sd.bounds.getEast() };
+    } else if (sd.type === 'poly') {
+        let s = 90, n = -90, w = 180, e = -180;
+        sd.latlngs.forEach(ll => { s = Math.min(s, ll.lat); n = Math.max(n, ll.lat); w = Math.min(w, ll.lng); e = Math.max(e, ll.lng); });
+        return { south: s, north: n, west: w, east: e };
+    }
+    return null;
+}
+
+function chooseStepSize(bounds) {
+    const area = (bounds.north - bounds.south) * (bounds.east - bounds.west);
+    let step = Math.sqrt(area / 3000);
+    return Math.max(0.005, Math.min(0.5, step));
+}
+
+function generateGridInShape(stepDeg) {
+    const bounds = getShapeBounds();
+    if (!bounds) return [];
+    const points = [];
+    for (let lat = bounds.south; lat <= bounds.north; lat += stepDeg) {
+        for (let lng = bounds.west; lng <= bounds.east; lng += stepDeg) {
+            if (pointInAnalysisShape(lat, lng)) {
+                points.push([lat, lng]);
+            }
+        }
+    }
+    return points;
+}
+
+// -- Filtered spatial index --
+function buildFilteredSpatialIndex() {
+    const grid = {};
+    filteredDealers.forEach((d, i) => {
+        const gx = Math.floor(d[F.lat] / GRID_SIZE);
+        const gy = Math.floor(d[F.lng] / GRID_SIZE);
+        const key = `${gx},${gy}`;
+        if (!grid[key]) grid[key] = [];
+        grid[key].push(i);
+    });
+    return grid;
+}
+
+function findNearestDealerFromGrid(lat, lng, grid) {
+    const gx = Math.floor(lat / GRID_SIZE);
+    const gy = Math.floor(lng / GRID_SIZE);
+    let bestDist = Infinity, bestIdx = -1;
+    for (let ring = 0; ring <= 5; ring++) {
+        for (let dx = -ring; dx <= ring; dx++) {
+            for (let dy = -ring; dy <= ring; dy++) {
+                if (ring > 0 && Math.abs(dx) < ring && Math.abs(dy) < ring) continue;
+                const cell = grid[`${gx + dx},${gy + dy}`];
+                if (!cell) continue;
+                for (const idx of cell) {
+                    const d = filteredDealers[idx];
+                    const dlat = d[F.lat] - lat, dlng = d[F.lng] - lng;
+                    const dist2 = dlat * dlat + dlng * dlng; // squared euclidean for speed
+                    if (dist2 < bestDist) { bestDist = dist2; bestIdx = idx; }
+                }
+            }
+        }
+        if (bestIdx >= 0 && ring > 0) break; // found in a previous ring, expand one more to be safe
+    }
+    return bestIdx >= 0 ? filteredDealers[bestIdx] : null;
+}
+
+function countCompaniesNearPoint(lat, lng, radiusMiles, scope, grid) {
+    const cellRadius = Math.ceil(radiusMiles / 50) + 1;
+    const gx = Math.floor(lat / GRID_SIZE);
+    const gy = Math.floor(lng / GRID_SIZE);
+    const field = scope === 'brand' ? F.brand : F.parent;
+    const groups = new Set();
+    for (let dx = -cellRadius; dx <= cellRadius; dx++) {
+        for (let dy = -cellRadius; dy <= cellRadius; dy++) {
+            const cell = grid[`${gx + dx},${gy + dy}`];
+            if (!cell) continue;
+            for (const idx of cell) {
+                const d = filteredDealers[idx];
+                const dist = haversineMiles(lat, lng, d[F.lat], d[F.lng]);
+                if (dist <= radiusMiles) groups.add(d[field]);
+            }
+        }
+    }
+    return groups.size;
+}
+
+// -- Main computation --
+function computeAreaAnalysis() {
+    if (!analysisShapeData || !filteredDealers.length) return;
+
+    const bounds = getShapeBounds();
+    const stepDeg = chooseStepSize(bounds);
+    const gridPoints = generateGridInShape(stepDeg);
+
+    if (gridPoints.length === 0) {
+        renderAnalysisPanel({ empty: true });
+        return;
+    }
+
+    // Dealers inside shape
+    const dealersInside = filteredDealers.filter(d => pointInAnalysisShape(d[F.lat], d[F.lng]));
+
+    // Dealer counts by parent and brand
+    const dealersByParent = {}, dealersByBrand = {};
+    dealersInside.forEach(d => {
+        dealersByParent[d[F.parent]] = (dealersByParent[d[F.parent]] || 0) + 1;
+        dealersByBrand[d[F.brand]] = (dealersByBrand[d[F.brand]] || 0) + 1;
+    });
+
+    // Build filtered spatial index
+    const fGrid = buildFilteredSpatialIndex();
+
+    // Territory: nearest dealer for each grid point
+    const territoryByParent = {}, territoryByBrand = {};
+    let totalSamples = gridPoints.length;
+
+    // Competition: monopoly classification
+    const radius = parseInt(document.getElementById('mono-radius').value) || 50;
+    const scope = document.getElementById('mono-scope').value;
+    let monopolyCount = 0, duopolyCount = 0, competitiveCount = 0;
+
+    gridPoints.forEach(([lat, lng]) => {
+        // Territory
+        const nearest = findNearestDealerFromGrid(lat, lng, fGrid);
+        if (nearest) {
+            const pname = nearest[F.parent];
+            const bname = nearest[F.brand];
+            territoryByParent[pname] = (territoryByParent[pname] || 0) + 1;
+            territoryByBrand[bname] = (territoryByBrand[bname] || 0) + 1;
+        }
+
+        // Competition
+        const nCompanies = countCompaniesNearPoint(lat, lng, radius, scope, fGrid);
+        if (nCompanies <= 1) monopolyCount++;
+        else if (nCompanies === 2) duopolyCount++;
+        else competitiveCount++;
+    });
+
+    renderAnalysisPanel({
+        empty: false,
+        dealerCount: dealersInside.length,
+        dealersByParent,
+        dealersByBrand,
+        territoryByParent,
+        territoryByBrand,
+        totalSamples,
+        monopolyCount,
+        duopolyCount,
+        competitiveCount,
+        radius,
+        scope,
+    });
+}
+
+// -- Render results --
+function renderAnalysisPanel(result) {
+    const panel = document.getElementById('analysis-panel');
+    const content = document.getElementById('analysis-content');
+
+    if (result.empty) {
+        content.innerHTML = '<div style="color:#888;font-size:12px;">No data points inside the drawn area. Try a larger shape or adjust filters.</div>';
+        panel.style.display = 'block';
+        // move info panel down if visible
+        document.getElementById('info-panel').style.top = '';
+        return;
+    }
+
+    let html = '';
+
+    // 1. Dealers in Area
+    html += '<div class="analysis-section">';
+    html += `<h4>Dealers in Area: <span style="color:#60a5fa;font-weight:700;">${result.dealerCount}</span>`;
+    html += `<span class="analysis-toggle-brand" onclick="toggleAnalysisView('dealers')">${analysisBrandView.dealers ? 'By parent' : 'By brand'}</span></h4>`;
+    const dealerMap = analysisBrandView.dealers ? result.dealersByBrand : result.dealersByParent;
+    const colorMap1 = analysisBrandView.dealers ? BRAND_COLORS : PARENT_COLORS;
+    const sorted1 = Object.entries(dealerMap).sort((a, b) => b[1] - a[1]);
+    const maxDealer = sorted1.length ? sorted1[0][1] : 1;
+    sorted1.forEach(([name, count]) => {
+        const pct = result.dealerCount ? (count / result.dealerCount * 100).toFixed(1) : 0;
+        const color = colorMap1[name] || '#888';
+        html += `<div class="analysis-bar-row">
+            <div class="analysis-bar-label" title="${name}">${name}</div>
+            <div class="analysis-bar-track"><div class="analysis-bar-fill" style="width:${count/maxDealer*100}%;background:${color};"></div></div>
+            <div class="analysis-bar-pct">${count} (${pct}%)</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // 2. Territory
+    html += '<div class="analysis-section">';
+    html += `<h4>Territory (Land %)`;
+    html += `<span class="analysis-toggle-brand" onclick="toggleAnalysisView('territory')">${analysisBrandView.territory ? 'By parent' : 'By brand'}</span></h4>`;
+    const terrMap = analysisBrandView.territory ? result.territoryByBrand : result.territoryByParent;
+    const colorMap2 = analysisBrandView.territory ? BRAND_COLORS : PARENT_COLORS;
+    const sorted2 = Object.entries(terrMap).sort((a, b) => b[1] - a[1]);
+    sorted2.forEach(([name, count]) => {
+        const pct = (count / result.totalSamples * 100).toFixed(1);
+        const color = colorMap2[name] || '#888';
+        html += `<div class="analysis-bar-row">
+            <div class="analysis-bar-label" title="${name}">${name}</div>
+            <div class="analysis-bar-track"><div class="analysis-bar-fill" style="width:${pct}%;background:${color};"></div></div>
+            <div class="analysis-bar-pct">${pct}%</div>
+        </div>`;
+    });
+    html += '</div>';
+
+    // 3. Competition
+    const total = result.monopolyCount + result.duopolyCount + result.competitiveCount;
+    const monoPct = (result.monopolyCount / total * 100).toFixed(1);
+    const duoPct = (result.duopolyCount / total * 100).toFixed(1);
+    const compPct = (result.competitiveCount / total * 100).toFixed(1);
+
+    html += '<div class="analysis-section">';
+    html += `<h4>Competition (${result.radius} mi radius, by ${result.scope})</h4>`;
+    html += '<div class="competition-bars">';
+    if (result.monopolyCount > 0) html += `<div class="comp-seg" style="width:${monoPct}%;background:#22c55e;" title="Monopoly: ${monoPct}%">${monoPct > 8 ? monoPct + '%' : ''}</div>`;
+    if (result.duopolyCount > 0) html += `<div class="comp-seg" style="width:${duoPct}%;background:#eab308;" title="Duopoly: ${duoPct}%">${duoPct > 8 ? duoPct + '%' : ''}</div>`;
+    if (result.competitiveCount > 0) html += `<div class="comp-seg" style="width:${compPct}%;background:#3b82f6;" title="Competitive: ${compPct}%">${compPct > 8 ? compPct + '%' : ''}</div>`;
+    html += '</div>';
+    html += `<div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:#888;">`;
+    html += `<span><span style="color:#22c55e;">&#9632;</span> Monopoly ${monoPct}%</span>`;
+    html += `<span><span style="color:#eab308;">&#9632;</span> Duopoly ${duoPct}%</span>`;
+    html += `<span><span style="color:#3b82f6;">&#9632;</span> 3+ ${compPct}%</span>`;
+    html += '</div>';
+    html += '</div>';
+
+    content.innerHTML = html;
+    panel.style.display = 'block';
+
+    // If info panel is also visible, shift it down
+    const infoPanel = document.getElementById('info-panel');
+    if (infoPanel.style.display === 'block') {
+        infoPanel.style.top = (panel.offsetHeight + 20) + 'px';
+    }
+}
+
+function toggleAnalysisView(section) {
+    analysisBrandView[section] = !analysisBrandView[section];
+    computeAreaAnalysis();
+}
+
+// Hook into applyFilters to re-run analysis when filters change
+const _origApplyFilters = applyFilters;
+applyFilters = function() {
+    _origApplyFilters();
+    if (areaAnalysisOn && analysisShapeData) {
+        computeAreaAnalysis();
+    }
+};
+</script>
+</body>
+</html>

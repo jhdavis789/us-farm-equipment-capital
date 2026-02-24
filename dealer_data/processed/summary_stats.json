@@ -1,0 +1,377 @@
+{
+  "total_dealers": 14572,
+  "with_coordinates": 14565,
+  "by_parent_company": {
+    "Deere & Company": 4374,
+    "AGCO": 3967,
+    "CNH Industrial": 2780,
+    "CLAAS": 1341,
+    "Argo Tractors": 1315,
+    "SDF Group": 795
+  },
+  "by_brand": {
+    "John Deere": 4374,
+    "Massey Ferguson": 1588,
+    "Fendt": 1451,
+    "CLAAS": 1341,
+    "New Holland": 1236,
+    "Case IH": 1133,
+    "Valtra": 928,
+    "McCormick": 747,
+    "Landini": 568,
+    "STEYR": 411,
+    "SAME": 394,
+    "Deutz-Fahr": 346,
+    "Lamborghini Tractors": 55
+  },
+  "by_country": {
+    "US": {
+      "count": 3980,
+      "name": "United States"
+    },
+    "DE": {
+      "count": 2386,
+      "name": "Germany"
+    },
+    "FR": {
+      "count": 1794,
+      "name": "France"
+    },
+    "IT": {
+      "count": 560,
+      "name": "Italy"
+    },
+    "ES": {
+      "count": 554,
+      "name": "Spain"
+    },
+    "GB": {
+      "count": 546,
+      "name": "United Kingdom"
+    },
+    "AT": {
+      "count": 481,
+      "name": "Austria"
+    },
+    "NO": {
+      "count": 352,
+      "name": "Norway"
+    },
+    "TR": {
+      "count": 323,
+      "name": "Turkey"
+    },
+    "CH": {
+      "count": 307,
+      "name": "Switzerland"
+    },
+    "PL": {
+      "count": 301,
+      "name": "Poland"
+    },
+    "NL": {
+      "count": 294,
+      "name": "Netherlands"
+    },
+    "BE": {
+      "count": 281,
+      "name": "Belgium"
+    },
+    "SE": {
+      "count": 276,
+      "name": "Sweden"
+    },
+    "FI": {
+      "count": 218,
+      "name": "Finland"
+    },
+    "PT": {
+      "count": 204,
+      "name": "Portugal"
+    },
+    "CA": {
+      "count": 144,
+      "name": "Canada"
+    },
+    "CZ": {
+      "count": 143,
+      "name": "Czech Republic"
+    },
+    "DK": {
+      "count": 142,
+      "name": "Denmark"
+    },
+    "UA": {
+      "count": 137,
+      "name": "Ukraine"
+    },
+    "ZA": {
+      "count": 132,
+      "name": "South Africa"
+    },
+    "IE": {
+      "count": 128,
+      "name": "Ireland"
+    },
+    "RO": {
+      "count": 102,
+      "name": "Romania"
+    },
+    "HU": {
+      "count": 81,
+      "name": "Hungary"
+    },
+    "AU": {
+      "count": 74,
+      "name": "Australia"
+    },
+    "INTL": {
+      "count": 70,
+      "name": "INTL"
+    },
+    "BR": {
+      "count": 57,
+      "name": "Brazil"
+    },
+    "BG": {
+      "count": 53,
+      "name": "Bulgaria"
+    },
+    "SK": {
+      "count": 51,
+      "name": "Slovakia"
+    },
+    "LT": {
+      "count": 43,
+      "name": "Lithuania"
+    },
+    "EE": {
+      "count": 42,
+      "name": "Estonia"
+    },
+    "LV": {
+      "count": 42,
+      "name": "Latvia"
+    },
+    "SI": {
+      "count": 22,
+      "name": "Slovenia"
+    },
+    "HR": {
+      "count": 21,
+      "name": "Croatia"
+    },
+    "MX": {
+      "count": 21,
+      "name": "Mexico"
+    },
+    "NZ": {
+      "count": 20,
+      "name": "New Zealand"
+    },
+    "GR": {
+      "count": 18,
+      "name": "Greece"
+    },
+    "RS": {
+      "count": 17,
+      "name": "Serbia"
+    },
+    "AR": {
+      "count": 15,
+      "name": "Argentina"
+    },
+    "JP": {
+      "count": 15,
+      "name": "Japan"
+    },
+    "EU": {
+      "count": 13,
+      "name": "EU"
+    },
+    "IS": {
+      "count": 12,
+      "name": "Iceland"
+    },
+    "LU": {
+      "count": 11,
+      "name": "Luxembourg"
+    },
+    "LA": {
+      "count": 9,
+      "name": "LA"
+    },
+    "MD": {
+      "count": 8,
+      "name": "Moldova"
+    },
+    "MY": {
+      "count": 5,
+      "name": "Malaysia"
+    },
+    "BW": {
+      "count": 3,
+      "name": "BW"
+    },
+    "MZ": {
+      "count": 3,
+      "name": "MZ"
+    },
+    "ZW": {
+      "count": 3,
+      "name": "ZW"
+    },
+    "EA": {
+      "count": 3,
+      "name": "EA"
+    },
+    "IL": {
+      "count": 3,
+      "name": "Israel"
+    },
+    "BA": {
+      "count": 3,
+      "name": "Bosnia and Herzegovina"
+    },
+    "CL": {
+      "count": 2,
+      "name": "Chile"
+    },
+    "KE": {
+      "count": 2,
+      "name": "Kenya"
+    },
+    "PH": {
+      "count": 2,
+      "name": "Philippines"
+    },
+    "SA": {
+      "count": 2,
+      "name": "Saudi Arabia"
+    },
+    "TH": {
+      "count": 2,
+      "name": "Thailand"
+    },
+    "UG": {
+      "count": 2,
+      "name": "UG"
+    },
+    "FE": {
+      "count": 2,
+      "name": "FE"
+    },
+    "GE": {
+      "count": 2,
+      "name": "Georgia"
+    },
+    "": {
+      "count": 2,
+      "name": ""
+    },
+    "MT": {
+      "count": 2,
+      "name": "Malta"
+    },
+    "LI": {
+      "count": 2,
+      "name": "LI"
+    },
+    "JO": {
+      "count": 2,
+      "name": "JO"
+    },
+    "AE": {
+      "count": 2,
+      "name": "United Arab Emirates"
+    },
+    "BH": {
+      "count": 2,
+      "name": "BH"
+    },
+    "BO": {
+      "count": 1,
+      "name": "Bolivia"
+    },
+    "EC": {
+      "count": 1,
+      "name": "Ecuador"
+    },
+    "HN": {
+      "count": 1,
+      "name": "Honduras"
+    },
+    "NA": {
+      "count": 1,
+      "name": "NA"
+    },
+    "NG": {
+      "count": 1,
+      "name": "Nigeria"
+    },
+    "ZM": {
+      "count": 1,
+      "name": "ZM"
+    },
+    "CO": {
+      "count": 1,
+      "name": "Colombia"
+    },
+    "TZ": {
+      "count": 1,
+      "name": "TZ"
+    },
+    "CR": {
+      "count": 1,
+      "name": "Costa Rica"
+    },
+    "DZ": {
+      "count": 1,
+      "name": "Algeria"
+    },
+    "SG": {
+      "count": 1,
+      "name": "SG"
+    },
+    "LB": {
+      "count": 1,
+      "name": "LB"
+    },
+    "GG": {
+      "count": 1,
+      "name": "GG"
+    },
+    "JE": {
+      "count": 1,
+      "name": "JE"
+    },
+    "IQ": {
+      "count": 1,
+      "name": "IQ"
+    },
+    "QA": {
+      "count": 1,
+      "name": "QA"
+    },
+    "OM": {
+      "count": 1,
+      "name": "OM"
+    },
+    "AZ": {
+      "count": 1,
+      "name": "Azerbaijan"
+    },
+    "CY": {
+      "count": 1,
+      "name": "Cyprus"
+    },
+    "AL": {
+      "count": 1,
+      "name": "Albania"
+    },
+    "MK": {
+      "count": 1,
+      "name": "North Macedonia"
+    }
+  }
+}
