@@ -173,6 +173,39 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
 .analysis-stat { font-size: 11px; color: #ccc; margin-bottom: 4px; }
 .analysis-stat span { color: #60a5fa; font-weight: 600; }
 
+#dot-size-control {
+    position: absolute; bottom: 60px; left: 50%; transform: translateX(-50%);
+    z-index: 1000; background: rgba(26, 29, 39, 0.92); border-radius: 8px;
+    border: 1px solid #3a3d4a; padding: 6px 12px; backdrop-filter: blur(8px);
+    display: flex; align-items: center; gap: 8px; font-size: 10px; color: #888;
+}
+#dot-size-control input[type=range] { width: 80px; }
+#crop-history-content { margin-top: 10px; padding-top: 8px; border-top: 1px solid #2a2d3a; }
+.crop-year-row { display: flex; justify-content: space-between; font-size: 11px; padding: 2px 0; border-bottom: 1px solid #1a1d25; }
+.crop-year-row .year { color: #888; }
+.crop-year-row .crop-name { color: #ccc; }
+#drivetime-controls .control-row { margin-left: 8px; }
+
+#map-legend {
+    position: absolute; bottom: 100px; right: 10px; z-index: 1000;
+    background: rgba(26, 29, 39, 0.92); border: 1px solid #3a3d4a;
+    border-radius: 8px; padding: 10px 12px; backdrop-filter: blur(8px);
+    max-height: 60vh; overflow-y: auto; min-width: 140px; display: none;
+}
+#map-legend h4 {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px;
+    color: #8899aa; margin-bottom: 6px;
+}
+#map-legend .legend-group { margin-bottom: 8px; }
+#map-legend .legend-group:last-child { margin-bottom: 0; }
+.map-legend-item {
+    display: flex; align-items: center; gap: 6px; padding: 1px 0; font-size: 10px; color: #ccc;
+}
+.map-legend-swatch {
+    width: 12px; height: 12px; border-radius: 3px; flex-shrink: 0;
+    border: 1px solid rgba(255,255,255,0.15);
+}
+
 @media (max-width: 768px) { #sidebar { display: none; } }
 </style>
 </head>
@@ -190,7 +223,11 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
         <div class="stat-card"><div class="value" id="stat-visible">-</div><div class="label">Showing</div></div>
     </div>
     <div id="filters-wrap">
-        <input type="text" id="search-box" placeholder="Search dealers, cities, countries..." style="margin-bottom:10px;">
+        <input type="text" id="search-box" placeholder="Search dealers, cities, countries..." style="margin-bottom:6px;">
+        <label class="checkbox-row" style="margin-bottom:10px;">
+            <input type="checkbox" id="coloc-toggle" onchange="applyFilters()">
+            Count co-located dealers as one (same parent, &lt;1 mi)
+        </label>
         <div class="filter-section">
             <div class="filter-header"><h4>Parent Companies</h4><div class="sel-btns">
                 <button class="sel-btn" onclick="selectAll('parents','parent-chips')">All</button>
@@ -271,17 +308,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
     <!-- Crop Overlay -->
     <div class="panel-section" id="crop-panel">
         <div class="toggle-row">
-            <label>Crop Map (US)</label>
+            <label>Crop Map</label>
             <div class="toggle" id="crop-toggle" onclick="toggleCropLayer()"></div>
         </div>
         <div class="panel-controls" id="crop-controls">
+            <div class="control-row">
+                <label>Region</label>
+                <select id="crop-region" onchange="switchCropRegion()">
+                    <option value="us" selected>US (USDA)</option>
+                    <option value="corine">EU (CORINE)</option>
+                    <option value="eucropmap">EU Crop Types (JRC)</option>
+                </select>
+            </div>
             <div class="control-row">
                 <label>Opacity</label>
                 <input type="range" id="crop-opacity" min="10" max="90" value="50" step="5"
                     oninput="updateCropOpacity(this.value)">
                 <span class="range-val" id="crop-opacity-val">50%</span>
             </div>
-            <div style="font-size:10px;color:#666;">USDA Cropland Data Layer - shows crop types across the US (corn, soy, wheat, etc.)</div>
+            <div id="crop-desc" style="font-size:10px;color:#666;">USDA Cropland Data Layer - shows crop types across the US</div>
         </div>
     </div>
 
@@ -308,6 +353,36 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
             </div>
             <div class="draw-hint" id="draw-hint">Select a tool, then draw on the map.</div>
             <button class="sel-btn" id="clear-area-btn" style="display:none;margin-top:4px;" onclick="clearAnalysisShape()">Clear shape</button>
+            <div class="control-row" style="margin-top:8px;">
+                <label>Radius</label>
+                <input type="range" id="area-radius" min="10" max="200" value="50" step="5"
+                    oninput="document.getElementById('area-radius-val').textContent=this.value+(document.getElementById('area-dist-mode').value==='drivetime'?' min':' mi');"
+                    onchange="if(analysisShapeData)computeAreaAnalysis()">
+                <span class="range-val" id="area-radius-val">50 mi</span>
+            </div>
+            <div class="control-row">
+                <label>Distance</label>
+                <select id="area-dist-mode" onchange="toggleDriveTimeMode()">
+                    <option value="straight" selected>Straight-line (miles)</option>
+                    <option value="drivetime">Est. drive time (min)</option>
+                </select>
+            </div>
+            <div id="drivetime-controls" style="display:none;">
+                <div class="control-row">
+                    <label>Road factor</label>
+                    <input type="range" id="area-circuity" min="10" max="20" value="14" step="1"
+                        oninput="document.getElementById('area-circuity-val').textContent=(this.value/10).toFixed(1)+'x';"
+                        onchange="if(analysisShapeData)computeAreaAnalysis()">
+                    <span class="range-val" id="area-circuity-val">1.4x</span>
+                </div>
+                <div class="control-row">
+                    <label>Speed</label>
+                    <input type="range" id="area-speed" min="10" max="70" value="45" step="5"
+                        oninput="document.getElementById('area-speed-val').textContent=this.value+' mph';"
+                        onchange="if(analysisShapeData)computeAreaAnalysis()">
+                    <span class="range-val" id="area-speed-val">45 mph</span>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -335,9 +410,17 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
         <h3>Area Analysis</h3>
         <div id="analysis-content"></div>
     </div>
+    <div id="map-legend"></div>
+    <div id="dot-size-control">
+        <span>Dot size</span>
+        <input type="range" id="dot-size-slider" min="0" max="16" value="5"
+            oninput="updateDotSize(this.value)">
+        <span id="dot-size-val">5px</span>
+    </div>
     <div id="view-toggle">
         <button class="view-btn active" data-view="cluster">Clustered</button>
         <button class="view-btn" data-view="heat">Heatmap</button>
+        <button class="view-btn" id="basemap-toggle-btn" onclick="toggleBasemap()">Satellite</button>
     </div>
     <div id="loading"><div class="spinner"></div><div style="color:#888;font-size:13px;">Loading dealer data...</div></div>
 </div>
@@ -375,6 +458,10 @@ let activeFilters = { parents: new Set(), brands: new Set(), regions: new Set(),
 let currentView = 'cluster';
 let monopolyOn = false, territoryPaintOn = false, cropOn = false;
 let allBrandsSet, allParentsSet;
+let dotSizeScale = 5;
+let cropRegion = 'us';
+let _markerJustClicked = false;
+let darkTileLayer, satelliteTileLayer, currentBasemap = 'dark';
 
 // Spatial index
 let spatialGrid = {};
@@ -403,6 +490,32 @@ function buildSpatialIndex() {
         if (!spatialGrid[key]) spatialGrid[key] = [];
         spatialGrid[key].push(i);
     });
+}
+
+function getEffectiveDealers() {
+    if (!document.getElementById('coloc-toggle') || !document.getElementById('coloc-toggle').checked) return filteredDealers;
+    const byParent = {};
+    filteredDealers.forEach(d => {
+        const p = d[F.parent];
+        if (!byParent[p]) byParent[p] = [];
+        byParent[p].push(d);
+    });
+    const effective = [];
+    Object.values(byParent).forEach(dealers => {
+        dealers.sort((a, b) => a[F.lat] - b[F.lat] || a[F.lng] - b[F.lng]);
+        const clustered = new Set();
+        for (let i = 0; i < dealers.length; i++) {
+            if (clustered.has(i)) continue;
+            effective.push(dealers[i]);
+            for (let j = i + 1; j < dealers.length; j++) {
+                if (clustered.has(j)) continue;
+                if (Math.abs(dealers[j][F.lat] - dealers[i][F.lat]) > 0.02) break;
+                const dist = haversineMiles(dealers[i][F.lat], dealers[i][F.lng], dealers[j][F.lat], dealers[j][F.lng]);
+                if (dist <= 1) clustered.add(j);
+            }
+        }
+    });
+    return effective;
 }
 
 function haversineMiles(lat1, lng1, lat2, lng2) {
@@ -467,9 +580,12 @@ function countNearbyGroups(dealer, radiusMiles, scope) {
 
 // Map init
 map = L.map('map', { center: [48, 10], zoom: 4, preferCanvas: true });
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+darkTileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     attribution: '&copy; OSM &copy; CARTO', maxZoom: 19,
 }).addTo(map);
+satelliteTileLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; Esri', maxZoom: 19,
+});
 
 // Refresh dots on zoom/move when clusters hidden
 map.on('zoomend moveend', () => {
@@ -493,13 +609,36 @@ map.on('zoomend moveend', () => {
 
 function dealerIcon(d, tiny) {
     const color = PARENT_COLORS[d[F.parent]] || BRAND_COLORS[d[F.brand]] || '#888';
-    const size = tiny ? 5 : 10;
+    const size = tiny ? dotSizeScale : Math.max(dotSizeScale, 10);
     const border = tiny ? '1px solid rgba(255,255,255,0.3)' : '1.5px solid rgba(255,255,255,0.5)';
     return L.divIcon({
         className: '',
         html: `<div style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:${border};box-shadow:0 0 ${tiny?2:4}px ${color};"></div>`,
         iconSize: [size, size], iconAnchor: [size/2, size/2],
     });
+}
+
+function updateDotSize(val) {
+    dotSizeScale = parseInt(val);
+    document.getElementById('dot-size-val').textContent = val === '0' ? 'Off' : val + 'px';
+    applyFilters();
+}
+
+function toggleBasemap() {
+    const btn = document.getElementById('basemap-toggle-btn');
+    if (currentBasemap === 'dark') {
+        map.removeLayer(darkTileLayer);
+        map.addLayer(satelliteTileLayer);
+        currentBasemap = 'satellite';
+        btn.classList.add('active');
+        btn.textContent = 'Dark';
+    } else {
+        map.removeLayer(satelliteTileLayer);
+        map.addLayer(darkTileLayer);
+        currentBasemap = 'dark';
+        btn.classList.remove('active');
+        btn.textContent = 'Satellite';
+    }
 }
 
 // ===== Canvas Voronoi Overlay with Land Clipping =====
@@ -624,6 +763,7 @@ function toggleTerritoryPaint() {
         if (voronoiLayer) { map.removeLayer(voronoiLayer); voronoiLayer = null; }
         document.getElementById('territory-hide-clusters').checked = false;
         document.getElementById('territory-legend').innerHTML = '';
+        updateMapLegend();
     }
     applyFilters();
 }
@@ -659,6 +799,44 @@ function redrawOverlays() {
         if (!monopolyLayer) { monopolyLayer = new CanvasVoronoiOverlay(); map.addLayer(monopolyLayer); }
         monopolyLayer.setData(filteredDealers, colorFn, 0.30);
     }
+
+    updateMapLegend();
+}
+
+function updateMapLegend() {
+    const el = document.getElementById('map-legend');
+    let html = '';
+
+    if (territoryPaintOn && filteredDealers.length) {
+        const colorBy = document.getElementById('territory-color-by').value;
+        const colorMap = colorBy === 'brand' ? BRAND_COLORS : PARENT_COLORS;
+        const field = colorBy === 'brand' ? F.brand : F.parent;
+        const seen = {};
+        filteredDealers.forEach(d => {
+            const name = d[field];
+            seen[name] = (seen[name] || 0) + 1;
+        });
+        const sorted = Object.entries(seen).sort((a, b) => b[1] - a[1]);
+        html += '<div class="legend-group">';
+        html += `<h4>Territory (${colorBy})</h4>`;
+        sorted.forEach(([name, count]) => {
+            const c = colorMap[name] || '#888';
+            html += `<div class="map-legend-item"><div class="map-legend-swatch" style="background:${c};"></div>${name}</div>`;
+        });
+        html += '</div>';
+    }
+
+    if (monopolyOn) {
+        html += '<div class="legend-group">';
+        html += '<h4>Competition</h4>';
+        html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:#22c55e;"></div>Monopoly (1)</div>';
+        html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:#eab308;"></div>Duopoly (2)</div>';
+        html += '<div class="map-legend-item"><div class="map-legend-swatch" style="background:rgba(255,255,255,0.05);border-color:rgba(255,255,255,0.3);"></div>3+ (competitive)</div>';
+        html += '</div>';
+    }
+
+    el.innerHTML = html;
+    el.style.display = html ? 'block' : 'none';
 }
 
 function buildTerritoryLegend(colorBy) {
@@ -680,6 +858,7 @@ function toggleMonopoly() {
     document.getElementById('monopoly-controls').classList.toggle('visible', monopolyOn);
     if (!monopolyOn) {
         if (monopolyLayer) { map.removeLayer(monopolyLayer); monopolyLayer = null; }
+        updateMapLegend();
     } else {
         redrawOverlays();
     }
@@ -687,29 +866,167 @@ function toggleMonopoly() {
 
 // ===== Crop Layer (USDA CropScape WMS) =====
 
+const CROP_LAYERS = {
+    us: {
+        url: 'https://nassgeodata.gmu.edu/CropScapeService/wms_cdlall.cgi',
+        options: { layers: 'cdl_2024', format: 'image/png', transparent: true, version: '1.1.1', attribution: 'USDA NASS CDL' },
+        desc: 'USDA Cropland Data Layer - shows crop types across the US'
+    },
+    corine: {
+        url: 'https://copernicus.discomap.eea.europa.eu/arcgis/services/Corine/CLC2018_WM/MapServer/WMSServer',
+        options: { layers: '1', format: 'image/png', transparent: true, version: '1.1.1', attribution: 'EEA CORINE' },
+        desc: 'CORINE Land Cover 2018 - European land use/land cover'
+    },
+    eucropmap: {
+        url: 'https://jeodpp.jrc.ec.europa.eu/jeodpp/services/ows/wms/landcover/eucropmap',
+        options: { layers: 'LC.EUCROPMAP.2022', format: 'image/png', transparent: true, version: '1.1.1', attribution: 'JRC EUCROPMAP' },
+        desc: 'EU Crop Map 2022 - European crop type classification'
+    }
+};
+
+function createCropLayer(region) {
+    const cfg = CROP_LAYERS[region];
+    if (!cfg) return null;
+    const opacity = parseInt(document.getElementById('crop-opacity').value) / 100;
+    return L.tileLayer.wms(cfg.url, { ...cfg.options, opacity });
+}
+
 function toggleCropLayer() {
     cropOn = !cropOn;
     document.getElementById('crop-toggle').classList.toggle('on', cropOn);
     document.getElementById('crop-controls').classList.toggle('visible', cropOn);
     if (cropOn) {
-        if (!cropLayer) {
-            cropLayer = L.tileLayer.wms('https://nassgeodata.gmu.edu/CropScapeService/wms_cdlall.cgi', {
-                layers: 'cdl_2023',
-                format: 'image/png',
-                transparent: true,
-                opacity: 0.5,
-                attribution: 'USDA NASS CDL',
-            });
-        }
-        map.addLayer(cropLayer);
+        cropRegion = document.getElementById('crop-region').value;
+        if (!cropLayer) cropLayer = createCropLayer(cropRegion);
+        if (cropLayer) map.addLayer(cropLayer);
+        if (cropRegion === 'us') map.on('click', onCropMapClick);
     } else {
-        if (cropLayer) map.removeLayer(cropLayer);
+        if (cropLayer) { map.removeLayer(cropLayer); cropLayer = null; }
+        map.off('click', onCropMapClick);
+    }
+}
+
+function switchCropRegion() {
+    const newRegion = document.getElementById('crop-region').value;
+    if (cropLayer) { map.removeLayer(cropLayer); cropLayer = null; }
+    map.off('click', onCropMapClick);
+    cropRegion = newRegion;
+    document.getElementById('crop-desc').textContent = CROP_LAYERS[newRegion].desc;
+    if (cropOn) {
+        cropLayer = createCropLayer(cropRegion);
+        if (cropLayer) map.addLayer(cropLayer);
+        if (cropRegion === 'us') map.on('click', onCropMapClick);
     }
 }
 
 function updateCropOpacity(val) {
     document.getElementById('crop-opacity-val').textContent = val + '%';
     if (cropLayer) cropLayer.setOpacity(val / 100);
+}
+
+// ===== Crop History (US CropScape click-to-query) =====
+
+const CDL_CROPS = {
+    1:'Corn',2:'Cotton',3:'Rice',4:'Sorghum',5:'Soybeans',6:'Sunflower',
+    10:'Peanuts',11:'Tobacco',12:'Sweet Corn',13:'Pop Corn',14:'Mint',
+    21:'Barley',22:'Durum Wheat',23:'Spring Wheat',24:'Winter Wheat',25:'Other Sm Grains',
+    26:'Dbl Crop WinWht/Soybeans',27:'Rye',28:'Oats',29:'Millet',
+    30:'Speltz',31:'Canola',32:'Flaxseed',33:'Safflower',34:'Rape Seed',
+    35:'Mustard',36:'Alfalfa',37:'Other Hay',38:'Camelina',39:'Buckwheat',
+    41:'Sugarbeets',42:'Dry Beans',43:'Potatoes',44:'Other Crops',45:'Sugarcane',
+    46:'Sweet Potatoes',47:'Misc Vegs & Fruits',48:'Watermelons',49:'Onions',
+    50:'Cucumbers',51:'Chick Peas',52:'Lentils',53:'Peas',54:'Tomatoes',
+    55:'Caneberries',56:'Hops',57:'Herbs',58:'Clover/Wildflowers',59:'Sod/Grass Seed',
+    60:'Switchgrass',61:'Fallow/Idle',62:'Pasture/Grass',63:'Forest',64:'Shrubland',
+    65:'Barren',66:'Cherries',67:'Peaches',68:'Apples',69:'Grapes',
+    70:'Christmas Trees',71:'Other Tree Crops',72:'Citrus',74:'Pecans',75:'Almonds',
+    76:'Walnuts',77:'Pears',81:'Clouds/No Data',82:'Developed',83:'Water',
+    87:'Wetlands',88:'Nonag/Undefined',92:'Aquaculture',111:'Open Water',
+    112:'Perennial Ice/Snow',121:'Developed/Open Space',122:'Developed/Low Intensity',
+    123:'Developed/Med Intensity',124:'Developed/High Intensity',131:'Barren',
+    141:'Deciduous Forest',142:'Evergreen Forest',143:'Mixed Forest',
+    152:'Shrubland',176:'Grassland/Pasture',190:'Woody Wetlands',195:'Herbaceous Wetlands',
+    204:'Pistachios',205:'Triticale',206:'Carrots',207:'Asparagus',208:'Garlic',
+    209:'Cantaloupes',210:'Prunes',211:'Olives',212:'Oranges',213:'Honeydew Melons',
+    214:'Broccoli',216:'Peppers',217:'Pomegranates',218:'Nectarines',219:'Greens',
+    220:'Plums',221:'Strawberries',222:'Squash',223:'Apricots',224:'Vetch',
+    225:'Dbl Crop WinWht/Corn',226:'Dbl Crop Oats/Corn',227:'Lettuce',
+    229:'Pumpkins',230:'Dbl Crop Lettuce/Durum Wht',231:'Dbl Crop Lettuce/Cantaloupe',
+    232:'Dbl Crop Lettuce/Cotton',233:'Dbl Crop Lettuce/Barley',
+    234:'Dbl Crop Durum Wht/Sorghum',235:'Dbl Crop Barley/Sorghum',
+    236:'Dbl Crop WinWht/Sorghum',237:'Dbl Crop Barley/Corn',238:'Dbl Crop WinWht/Cotton',
+    239:'Dbl Crop Soybeans/Cotton',240:'Dbl Crop Soybeans/Oats',241:'Dbl Crop Corn/Soybeans',
+    242:'Blueberries',243:'Cabbage',244:'Cauliflower',245:'Celery',246:'Radishes',
+    247:'Turnips',248:'Eggplants',249:'Gourds',250:'Cranberries',254:'Dbl Crop Barley/Soybeans'
+};
+
+const CDL_COLORS = {
+    1:'#ffd300',2:'#ff2626',3:'#00a8e5',4:'#ff9e0a',5:'#267000',6:'#ffff00',
+    21:'#e2007c',22:'#896054',23:'#d8b56b',24:'#a57000',25:'#d69dbc',
+    26:'#707000',27:'#aa007c',28:'#a05989',29:'#700049',
+    36:'#ffa5e2',37:'#a5f28c',41:'#a800e5',42:'#a50000',43:'#702600',
+    61:'#bfbf77',62:'#93cc93',63:'#1a5b28',64:'#c6d69e',65:'#ccbfa3',
+    69:'#704489',72:'#d6d600',75:'#d1ff00',76:'#6699cc',
+    82:'#9c9c9c',87:'#7eb8ff',111:'#4970a3',112:'#d3e2f9',
+    121:'#e1cfd0',122:'#ccb4b5',123:'#9c7f80',124:'#6a4e4f',131:'#ccbfa3',
+    141:'#6aa66e',142:'#1a5b28',143:'#b5c98e',152:'#c6d69e',
+    176:'#e8d1a0',190:'#70a3ba',195:'#7eb8ff'
+};
+
+function onCropMapClick(e) {
+    if (!cropOn || cropRegion !== 'us' || drawMode) return;
+    setTimeout(() => {
+        if (_markerJustClicked) return;
+        fetchCropHistory(e.latlng.lat, e.latlng.lng);
+    }, 100);
+}
+
+function fetchCropHistory(lat, lng) {
+    const panel = document.getElementById('info-panel');
+    document.getElementById('info-name').textContent = 'Crop History';
+    const brandTag = document.getElementById('info-brand');
+    brandTag.textContent = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+    brandTag.style.background = '#2563eb'; brandTag.style.color = '#fff';
+    document.getElementById('info-details').innerHTML = '<div style="color:#888;font-size:11px;">Loading crop data...</div>';
+    document.getElementById('info-nearby').innerHTML = '';
+    panel.style.display = 'block';
+
+    const years = [2024, 2023, 2022, 2021, 2020, 2019, 2018];
+    const results = [];
+
+    function queryYear(idx) {
+        if (idx >= years.length) {
+            renderCropHistory(results);
+            return;
+        }
+        const year = years[idx];
+        const delta = 0.0001;
+        const bbox = `${lng - delta},${lat - delta},${lng + delta},${lat + delta}`;
+        const url = `https://nassgeodata.gmu.edu/CropScapeService/wms_cdlall.cgi?SERVICE=WMS&VERSION=1.1.1&REQUEST=GetFeatureInfo&LAYERS=cdl_${year}&QUERY_LAYERS=cdl_${year}&SRS=EPSG:4326&BBOX=${bbox}&WIDTH=1&HEIGHT=1&X=0&Y=0&INFO_FORMAT=text/plain`;
+
+        fetch(url).then(r => r.text()).then(text => {
+            const match = text.match(/value\s*[:=]\s*"?(\d+)"?/i) || text.match(/(\d+)/);
+            const cropCode = match ? parseInt(match[1]) : null;
+            results.push({ year, cropCode, cropName: CDL_CROPS[cropCode] || `Code ${cropCode}` });
+            document.getElementById('info-details').innerHTML = `<div style="color:#888;font-size:11px;">Loaded ${results.length}/${years.length} years...</div>`;
+            setTimeout(() => queryYear(idx + 1), 300);
+        }).catch(() => {
+            results.push({ year, cropCode: null, cropName: 'Error / CORS blocked' });
+            setTimeout(() => queryYear(idx + 1), 300);
+        });
+    }
+
+    queryYear(0);
+}
+
+function renderCropHistory(results) {
+    let html = '<div style="font-size:10px;color:#666;margin-bottom:6px;">USDA CDL crop history</div>';
+    results.forEach(r => {
+        const bgColor = CDL_COLORS[r.cropCode] || 'transparent';
+        const dot = bgColor !== 'transparent' ? `<span style="display:inline-block;width:8px;height:8px;border-radius:2px;background:${bgColor};margin-right:4px;vertical-align:middle;"></span>` : '';
+        html += `<div class="crop-year-row"><span class="year">${r.year}</span><span class="crop-name">${dot}${r.cropName}</span></div>`;
+    });
+    document.getElementById('info-details').innerHTML = html;
 }
 
 // ===== Load Data =====
@@ -793,9 +1110,9 @@ function initUI() {
         st = setTimeout(() => { activeFilters.search = e.target.value.toLowerCase().trim(); applyFilters(); }, 200);
     });
 
-    document.querySelectorAll('.view-btn').forEach(btn => {
+    document.querySelectorAll('.view-btn[data-view]').forEach(btn => {
         btn.onclick = () => {
-            document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.view-btn[data-view]').forEach(b => b.classList.remove('active'));
             btn.classList.add('active'); currentView = btn.dataset.view; applyFilters();
         };
     });
@@ -847,6 +1164,51 @@ function getRegion(cc) {
     return 'Other';
 }
 
+function updateSidebarCounts(dealers) {
+    // Update bar chart
+    const parents = {};
+    dealers.forEach(d => { parents[d[F.parent]] = (parents[d[F.parent]] || 0) + 1; });
+    const sorted = Object.entries(parents).sort((a, b) => b[1] - a[1]);
+    const maxP = sorted.length ? sorted[0][1] : 1;
+    const bb = document.getElementById('brand-bars');
+    bb.innerHTML = '';
+    sorted.forEach(([name, count]) => {
+        const color = PARENT_COLORS[name] || '#888';
+        const pct = (count / maxP * 100).toFixed(1);
+        const row = document.createElement('div'); row.className = 'bar-row';
+        row.innerHTML = `<div class="bar-label">${name}</div><div class="bar-track"><div class="bar-fill" style="width:${pct}%;background:${color};"></div></div><div class="bar-count">${count.toLocaleString()}</div>`;
+        row.onclick = () => soloFilter('parents', 'parent-chips', name, allParentsSet);
+        bb.appendChild(row);
+    });
+
+    // Update country list
+    const countries = {};
+    dealers.forEach(d => {
+        const cc = d[F.cc];
+        if (!countries[cc]) countries[cc] = { count: 0, name: d[F.cn] || cc };
+        countries[cc].count++;
+    });
+    const cr = document.getElementById('country-rows');
+    cr.innerHTML = '';
+    Object.entries(countries).sort((a, b) => b[1].count - a[1].count).slice(0, 30).forEach(([cc, info]) => {
+        const row = document.createElement('div'); row.className = 'country-row';
+        row.innerHTML = `<div><span class="cc">${cc}</span>${info.name}</div><div>${info.count.toLocaleString()}</div>`;
+        row.onclick = () => {
+            const pts = allDealers.filter(d => d[F.cc] === cc);
+            if (pts.length) map.fitBounds(L.latLngBounds(pts.map(d => [d[F.lat], d[F.lng]])), {padding:[40,40]});
+        };
+        cr.appendChild(row);
+    });
+}
+
+function toggleDriveTimeMode() {
+    const mode = document.getElementById('area-dist-mode').value;
+    document.getElementById('drivetime-controls').style.display = mode === 'drivetime' ? 'block' : 'none';
+    const radiusVal = document.getElementById('area-radius').value;
+    document.getElementById('area-radius-val').textContent = radiusVal + (mode === 'drivetime' ? ' min' : ' mi');
+    if (analysisShapeData) computeAreaAnalysis();
+}
+
 function applyFilters() {
     filteredDealers = allDealers.filter(d => {
         if (!activeFilters.parents.has(d[F.parent])) return false;
@@ -859,7 +1221,9 @@ function applyFilters() {
         return true;
     });
 
-    document.getElementById('stat-visible').textContent = filteredDealers.length.toLocaleString();
+    const effectiveDlrs = getEffectiveDealers();
+    document.getElementById('stat-visible').textContent = effectiveDlrs.length.toLocaleString();
+    updateSidebarCounts(effectiveDlrs);
 
     if (clusterGroup) { map.removeLayer(clusterGroup); clusterGroup = null; }
     if (heatLayer) { map.removeLayer(heatLayer); heatLayer = null; }
@@ -868,21 +1232,26 @@ function applyFilters() {
     const hideClusters = territoryPaintOn && document.getElementById('territory-hide-clusters').checked;
     const useTinyDots = territoryPaintOn || monopolyOn;
 
-    if (currentView === 'cluster') {
+    if (currentView === 'cluster' && dotSizeScale === 0) {
+        // Dots off — skip markers/clusters entirely
+    } else if (currentView === 'cluster') {
         if (!hideClusters) {
             clusterGroup = L.markerClusterGroup({
                 maxClusterRadius: 50, spiderfyOnMaxZoom: true,
                 showCoverageOnHover: false, disableClusteringAtZoom: 12, chunkedLoading: true,
                 iconCreateFunction: function(cluster) {
                     const count = cluster.getChildCount();
-                    let size = count < 20 ? 28 : count < 100 ? 36 : 44;
+                    const scale = dotSizeScale / 5;
+                    let size = Math.round((count < 20 ? 28 : count < 100 ? 36 : 44) * scale);
+                    size = Math.max(size, 16);
+                    const fontSize = Math.round((size < 34 * scale ? 10 : 12) * scale);
                     const children = cluster.getAllChildMarkers();
                     const pc = {};
                     children.forEach(m => { pc[m.options.parent] = (pc[m.options.parent]||0)+1; });
                     const top = Object.entries(pc).sort((a,b) => b[1]-a[1])[0][0];
                     const color = PARENT_COLORS[top] || '#60a5fa';
                     return L.divIcon({
-                        html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${size<34?10:12}px;font-weight:700;border:2px solid rgba(255,255,255,0.35);box-shadow:0 2px 6px rgba(0,0,0,0.4);">${count>=1000?(count/1000).toFixed(1)+'k':count}</div>`,
+                        html: `<div style="background:${color};width:${size}px;height:${size}px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:${fontSize}px;font-weight:700;border:2px solid rgba(255,255,255,0.35);box-shadow:0 2px 6px rgba(0,0,0,0.4);">${count>=1000?(count/1000).toFixed(1)+'k':count}</div>`,
                         className: '', iconSize: [size, size],
                     });
                 }
@@ -925,6 +1294,8 @@ function applyFilters() {
 }
 
 function showInfo(d) {
+    _markerJustClicked = true;
+    setTimeout(() => _markerJustClicked = false, 200);
     const panel = document.getElementById('info-panel');
     document.getElementById('info-name').textContent = d[F.name];
     const brandTag = document.getElementById('info-brand');
@@ -1248,8 +1619,8 @@ function findNearestDealerFromGrid(lat, lng, grid) {
     return bestIdx >= 0 ? filteredDealers[bestIdx] : null;
 }
 
-function countCompaniesNearPoint(lat, lng, radiusMiles, scope, grid) {
-    const cellRadius = Math.ceil(radiusMiles / 50) + 1;
+function countCompaniesNearPoint(lat, lng, radiusValue, scope, grid, distFn) {
+    const cellRadius = Math.ceil(radiusValue / 50) + 1;
     const gx = Math.floor(lat / GRID_SIZE);
     const gy = Math.floor(lng / GRID_SIZE);
     const field = scope === 'brand' ? F.brand : F.parent;
@@ -1261,7 +1632,8 @@ function countCompaniesNearPoint(lat, lng, radiusMiles, scope, grid) {
             for (const idx of cell) {
                 const d = filteredDealers[idx];
                 const dist = haversineMiles(lat, lng, d[F.lat], d[F.lng]);
-                if (dist <= radiusMiles) groups.add(d[field]);
+                const effectiveDist = distFn ? distFn(dist) : dist;
+                if (effectiveDist <= radiusValue) groups.add(d[field]);
             }
         }
     }
@@ -1281,26 +1653,38 @@ function computeAreaAnalysis() {
         return;
     }
 
-    // Dealers inside shape
-    const dealersInside = filteredDealers.filter(d => pointInAnalysisShape(d[F.lat], d[F.lng]));
+    // Dealers inside shape — use effective dealers for count section
+    const effectiveDlrs = getEffectiveDealers();
+    const effectiveDealersInside = effectiveDlrs.filter(d => pointInAnalysisShape(d[F.lat], d[F.lng]));
 
-    // Dealer counts by parent and brand
+    // Dealer counts by parent and brand (from effective dealers)
     const dealersByParent = {}, dealersByBrand = {};
-    dealersInside.forEach(d => {
+    effectiveDealersInside.forEach(d => {
         dealersByParent[d[F.parent]] = (dealersByParent[d[F.parent]] || 0) + 1;
         dealersByBrand[d[F.brand]] = (dealersByBrand[d[F.brand]] || 0) + 1;
     });
 
-    // Build filtered spatial index
+    // Build filtered spatial index (uses raw filteredDealers for geographic coverage)
     const fGrid = buildFilteredSpatialIndex();
 
     // Territory: nearest dealer for each grid point
     const territoryByParent = {}, territoryByBrand = {};
     let totalSamples = gridPoints.length;
 
-    // Competition: monopoly classification
-    const radius = parseInt(document.getElementById('mono-radius').value) || 50;
+    // Competition: monopoly classification — uses area's own radius
+    const areaRadius = parseInt(document.getElementById('area-radius').value) || 50;
+    const distMode = document.getElementById('area-dist-mode').value;
     const scope = document.getElementById('mono-scope').value;
+
+    let distFn = null;
+    let radiusLabel = `${areaRadius} mi`;
+    if (distMode === 'drivetime') {
+        const circuity = (parseInt(document.getElementById('area-circuity').value) || 14) / 10;
+        const speed = parseInt(document.getElementById('area-speed').value) || 45;
+        distFn = (miles) => miles * circuity / speed * 60;
+        radiusLabel = `${areaRadius} min`;
+    }
+
     let monopolyCount = 0, duopolyCount = 0, competitiveCount = 0;
 
     gridPoints.forEach(([lat, lng]) => {
@@ -1314,7 +1698,7 @@ function computeAreaAnalysis() {
         }
 
         // Competition
-        const nCompanies = countCompaniesNearPoint(lat, lng, radius, scope, fGrid);
+        const nCompanies = countCompaniesNearPoint(lat, lng, areaRadius, scope, fGrid, distFn);
         if (nCompanies <= 1) monopolyCount++;
         else if (nCompanies === 2) duopolyCount++;
         else competitiveCount++;
@@ -1322,7 +1706,7 @@ function computeAreaAnalysis() {
 
     renderAnalysisPanel({
         empty: false,
-        dealerCount: dealersInside.length,
+        dealerCount: effectiveDealersInside.length,
         dealersByParent,
         dealersByBrand,
         territoryByParent,
@@ -1331,7 +1715,8 @@ function computeAreaAnalysis() {
         monopolyCount,
         duopolyCount,
         competitiveCount,
-        radius,
+        radius: areaRadius,
+        radiusLabel,
         scope,
     });
 }
@@ -1395,7 +1780,7 @@ function renderAnalysisPanel(result) {
     const compPct = (result.competitiveCount / total * 100).toFixed(1);
 
     html += '<div class="analysis-section">';
-    html += `<h4>Competition (${result.radius} mi radius, by ${result.scope})</h4>`;
+    html += `<h4>Competition (${result.radiusLabel || result.radius + ' mi'} radius, by ${result.scope})</h4>`;
     html += '<div class="competition-bars">';
     if (result.monopolyCount > 0) html += `<div class="comp-seg" style="width:${monoPct}%;background:#22c55e;" title="Monopoly: ${monoPct}%">${monoPct > 8 ? monoPct + '%' : ''}</div>`;
     if (result.duopolyCount > 0) html += `<div class="comp-seg" style="width:${duoPct}%;background:#eab308;" title="Duopoly: ${duoPct}%">${duoPct > 8 ? duoPct + '%' : ''}</div>`;
