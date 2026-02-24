@@ -40,19 +40,22 @@ section .subtitle{font-size:.92rem;color:#64748b;margin-bottom:1.25rem}
 .chart-actions{display:flex;align-items:center;gap:6px}
 .reset-btn{background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;font-size:.72rem;font-weight:600;padding:2px 8px;border-radius:5px;cursor:pointer;display:none;transition:background .15s}
 .reset-btn:hover{background:#e2e8f0}
-/* Info button & popover */
-.info-wrap{position:relative}
-.info-btn{width:22px;height:22px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;color:#64748b;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
-.info-btn:hover{background:#e2e8f0;color:#334155}
-.info-pop{display:none;position:absolute;top:28px;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.85rem 1rem;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:30;min-width:280px;max-width:340px}
-.info-pop.open{display:block}
-.info-pop h4{font-size:.78rem;color:#334155;margin-bottom:.4rem;font-weight:600}
-.info-pop ul{list-style:none;padding:0;margin-bottom:.6rem}
-.info-pop li{padding:2px 0}
-.info-pop li a{font-size:.76rem;color:#2563eb;text-decoration:none}
-.info-pop li a:hover{text-decoration:underline}
-.csv-btn{width:100%;background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;font-size:.75rem;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;transition:background .15s}
+/* Icon buttons (? and gear) */
+.icon-wrap{position:relative}
+.icon-btn{width:22px;height:22px;border-radius:50%;background:#f1f5f9;border:1px solid #cbd5e1;color:#64748b;font-size:.72rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s}
+.icon-btn:hover{background:#e2e8f0;color:#334155}
+.icon-pop{display:none;position:absolute;top:28px;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:.85rem 1rem;box-shadow:0 8px 24px rgba(0,0,0,.15);z-index:30;min-width:280px;max-width:340px}
+.icon-pop.open{display:block}
+.icon-pop h4{font-size:.78rem;color:#334155;margin-bottom:.4rem;font-weight:600}
+.icon-pop ul{list-style:none;padding:0;margin-bottom:.6rem}
+.icon-pop li{padding:2px 0}
+.icon-pop li a{font-size:.76rem;color:#2563eb;text-decoration:none}
+.icon-pop li a:hover{text-decoration:underline}
+.icon-pop li label{font-size:.76rem;color:#334155;cursor:pointer;display:flex;align-items:center;gap:5px}
+.icon-pop li label input{accent-color:#1e3a5f}
+.csv-btn{width:100%;background:#f1f5f9;border:1px solid #cbd5e1;color:#475569;font-size:.75rem;font-weight:600;padding:5px 10px;border-radius:6px;cursor:pointer;transition:background .15s;margin-top:4px}
 .csv-btn:hover{background:#e2e8f0}
+.icon-pop .formula-note{font-size:.72rem;color:#64748b;margin-top:.5rem;padding-top:.5rem;border-top:1px solid #f1f5f9;line-height:1.5}
 .insight-box{background:#fffbeb;border:1px solid #fde68a;border-radius:10px;padding:1rem 1.25rem;margin:1rem 0;font-size:.9rem;color:#92400e}
 .insight-box strong{color:#78350f}
 .sources{background:#fff;border-radius:12px;padding:2rem;margin-bottom:3rem;box-shadow:0 1px 3px rgba(0,0,0,.08)}
@@ -85,9 +88,10 @@ footer{text-align:center;padding:2rem;color:#94a3b8;font-size:.82rem;border-top:
     <h2>The Investment Gap</h2>
     <p class="subtitle">Gross investment in agricultural machinery vs. capital consumption (depreciation). When investment falls below depreciation, the fleet is shrinking in real terms.</p>
     <div class="chart-grid">
-      <div class="chart-box full"><h3>Gross Investment vs. Depreciation</h3><div class="chart-note">Scroll to zoom, drag to pan. Use range buttons to expand/contract time window.</div><div class="chart-wrap"><canvas id="investVsDeprecChart"></canvas></div></div>
+      <div class="chart-box full"><h3>Gross Investment vs. Depreciation</h3><div class="chart-note">BEA geometric declining-balance depreciation: &delta; = R/T where R &asymp; 1.65, T = 15-year service life &rArr; ~11% annual rate applied to current-cost net stock.</div><div class="chart-wrap"><canvas id="investVsDeprecChart"></canvas></div></div>
       <div class="chart-box"><h3>Investment-to-Depreciation Ratio</h3><div class="chart-note">Ratio > 1.0 = fleet renewal. Ratio < 1.0 = fleet shrinking.</div><div class="chart-wrap"><canvas id="ecRatioChart"></canvas></div></div>
-      <div class="chart-box"><h3>Cumulative Net Investment Since 1950</h3><div class="chart-note">Running total of (investment - depreciation).</div><div class="chart-wrap"><canvas id="cumulativeNetChart"></canvas></div></div>
+      <div class="chart-box"><h3>Cumulative Net Investment Since 1950</h3><div class="chart-note">Running total of (investment &minus; depreciation). Does not account for used equipment exports.</div><div class="chart-wrap"><canvas id="cumulativeNetChart"></canvas></div></div>
+      <div class="chart-box full"><h3>Rolling &amp; Decay-Weighted Net Investment</h3><div class="chart-note">L10Y = sum of last 10 years net. Decay-weighted uses exponential decay (half-life 7 years) so recent investment counts more.</div><div class="chart-wrap"><canvas id="rollingNetChart"></canvas></div></div>
     </div>
     <div class="insight-box"><strong>Key finding:</strong> The 2025 investment-to-depreciation ratio of 0.73x matches the worst levels of the 2016&ndash;2017 downturn. Farmers are replacing only 73 cents of equipment for every dollar that wears out. Expanding back to the 1950s reveals that the E/C ratio was below 0.7 for most of that decade during rapid farm consolidation.</div>
   </section>
@@ -96,49 +100,50 @@ footer{text-align:center;padding:2rem;color:#94a3b8;font-size:.82rem;border-top:
     <h2>Fleet Composition &amp; Size</h2>
     <p class="subtitle">USDA Census of Agriculture data (every 5 years). The fleet is shrinking overall but shifting toward larger, more powerful machines.</p>
     <div class="chart-grid">
-      <div class="chart-box"><h3>Tractors on U.S. Farms by Horsepower Class</h3><div class="chart-note">Source: USDA Census of Agriculture, Table 45</div><div class="chart-wrap"><canvas id="fleetByHPChart"></canvas></div></div>
+      <div class="chart-box"><h3>Tractors on U.S. Farms by Horsepower Class</h3><div class="chart-note">Census reports 3 HP categories. Finer breakdowns (100-139, 140-179, 180+) are not published.</div><div class="chart-wrap"><canvas id="fleetByHPChart"></canvas></div></div>
       <div class="chart-box"><h3>Combines, Balers &amp; Other Equipment</h3><div class="chart-note">Source: USDA Census of Agriculture, Table 45</div><div class="chart-wrap"><canvas id="otherEquipChart"></canvas></div></div>
     </div>
   </section>
 
   <section>
     <h2>Fleet Age</h2>
-    <p class="subtitle">The Census only tracks two age buckets. We derive the implied replacement cycle from Census stock and AEM annual sales.</p>
+    <p class="subtitle">Under-5-year share by HP class, plus implied replacement cycles from Census stock &divide; AEM annual sales. Note: tractors depreciate by engine hours (typically 10,000&ndash;12,000 hr economic life for 100+ HP), not calendar time, but fleet-wide hours data is not collected.</p>
     <div class="chart-grid">
-      <div class="chart-box"><h3>Share of Fleet Under 5 Years Old</h3><div class="chart-note">Only ~12% of the fleet is "new" in any given Census year.</div><div class="chart-wrap"><canvas id="ageShareChart"></canvas></div></div>
+      <div class="chart-box"><h3>Share of Fleet Under 5 Years Old by HP Class</h3><div class="chart-note">Broken out by Census HP category. 100+ HP renewal peaked in 2012 then declined.</div><div class="chart-wrap"><canvas id="ageShareChart"></canvas></div></div>
       <div class="chart-box"><h3>Implied Replacement Cycle by HP Class</h3><div class="chart-note">Census fleet &divide; AEM annual sales. Red dashed line = 15-year recommended life.</div><div class="chart-wrap"><canvas id="replacementCycleChart"></canvas></div></div>
-      <div class="chart-box full"><h3>Replacement Cycle Over Time (by HP Class)</h3><div class="chart-note">Using 2022 Census fleet counts and AEM annual sales for each year.</div><div class="chart-wrap"><canvas id="replacementCycleTimeChart"></canvas></div></div>
+      <div class="chart-box full"><h3>Replacement Cycle Over Time (by HP Class)</h3><div class="chart-note">Using 2022 Census fleet counts and AEM annual sales for each year (2017&ndash;2025).</div><div class="chart-wrap"><canvas id="replacementCycleTimeChart"></canvas></div></div>
     </div>
-    <div class="insight-box"><strong>The serious farming equipment is barely turning over.</strong> At 2024 sales rates, 46 years to replace 100+ HP tractors and 54 years to replace combines. Even at the 2021 boom peak, large tractors were on a 36-year cycle &mdash; 2.4x their recommended 15-year life.</div>
+    <div class="insight-box"><strong>The serious farming equipment is barely turning over.</strong> At 2024 sales rates, 46 years to replace 100+ HP tractors and 54 years to replace combines. Even at the 2021 boom peak, large tractors were on a 36-year cycle &mdash; 2.4x their recommended 15-year life. The 2025 collapse to 204 years for combines and 70 years for 100+ HP tractors is the worst on record.</div>
   </section>
 
   <section>
     <h2>Capital Stock &amp; Equipment Prices</h2>
     <p class="subtitle">The dollar value of farm equipment has risen dramatically, but much of this reflects price inflation rather than real fleet growth.</p>
     <div class="chart-grid">
-      <div class="chart-box full"><h3>Agricultural Machinery Prices vs. Inflation &amp; Crop Prices</h3><div class="chart-note">All indexed to 2017 = 100. Machinery prices have outpaced general inflation since 2020 while corn prices crashed from their 2022 peak &mdash; a worsening squeeze on farmers.</div><div class="chart-wrap"><canvas id="priceCompareChart"></canvas></div></div>
+      <div class="chart-box full"><h3>Agricultural Machinery Prices vs. Inflation &amp; Crop Prices</h3><div class="chart-note">All indexed to 2017 = 100. Machinery prices have outpaced general inflation since 2020 while corn prices crashed from their 2022 peak.</div><div class="chart-wrap"><canvas id="priceCompareChart"></canvas></div></div>
       <div class="chart-box"><h3>Net Capital Stock at Current Cost</h3><div class="chart-note">Current-cost net stock of farm business nonresidential equipment.</div><div class="chart-wrap"><canvas id="netStockChart"></canvas></div></div>
-      <div class="chart-box"><h3>Real Investment (Inflation-Adjusted)</h3><div class="chart-note">Billions of 2017 dollars. Strips out price inflation to show actual volume.</div><div class="chart-wrap"><canvas id="realInvestChart"></canvas></div></div>
-      <div class="chart-box"><h3>Census: Market Value of Equipment on Farms</h3><div class="chart-note">Self-reported market value by farm operators.</div><div class="chart-wrap"><canvas id="censusMachValueChart"></canvas></div></div>
+      <div class="chart-box"><h3>Real Investment (Inflation-Adjusted)</h3><div class="chart-note">Billions of 2017 dollars (nominal &divide; price index). Strips out price inflation to show actual volume.</div><div class="chart-wrap"><canvas id="realInvestChart"></canvas></div></div>
+      <div class="chart-box full"><h3>Census: Equipment Value &mdash; Total, Per Acre, Per Bushel-Equivalent</h3><div class="chart-note">Self-reported market value. Per-harvested-acre and per-corn-equivalent-bushel normalize for farm size and output.</div><div class="chart-wrap"><canvas id="censusMachValueChart"></canvas></div></div>
     </div>
-    <div class="insight-box"><strong>Price inflation is masking the real decline.</strong> Real investment peaked at $48.7B in 2014 and has fallen to $28.2B in 2025 &mdash; a 42% decline in actual equipment volumes. Equipment prices have risen 29% since 2017 (and 108% since 1997), far outpacing CPI (+31%) and GDP deflator (+29%). Meanwhile, the corn price index is at 131 vs. its 2022 peak of 206 &mdash; revenue is falling while costs keep rising.</div>
+    <div class="insight-box"><strong>Price inflation is masking the real decline.</strong> Real investment peaked at $48.7B in 2014 and has fallen to $28.2B in 2025 &mdash; a 42% decline in actual equipment volumes. Equipment costs per harvested acre have risen from $451 (2002) to $1,037 (2022), while per-bushel equipment intensity has climbed from $7.67 to $11.87 &mdash; farmers are spending 55% more capital per unit of output.</div>
   </section>
 
   <section>
     <h2>Trade Flows</h2>
     <p class="subtitle">The U.S. is a large net importer of tractors (mostly compact/utility from Asia) and a net exporter of combines and large equipment.</p>
     <div class="chart-grid">
-      <div class="chart-box"><h3>Tractor Trade: Imports vs. Exports (HS 8701)</h3><div class="chart-note">All tractors including road tractors.</div><div class="chart-wrap"><canvas id="tradeFlowChart"></canvas></div></div>
+      <div class="chart-box"><h3>Tractor Trade: Imports vs. Exports (HS 8701)</h3><div class="chart-note">All tractors including road tractors. New/used split available at 10-digit Schedule B level (not shown).</div><div class="chart-wrap"><canvas id="tradeFlowChart"></canvas></div></div>
       <div class="chart-box"><h3>Tractor Trade Balance</h3><div class="chart-note">Negative = net imports.</div><div class="chart-wrap"><canvas id="tradeBalanceChart"></canvas></div></div>
     </div>
   </section>
 
   <section>
-    <h2>Recent Equipment Sales</h2>
-    <p class="subtitle">Association of Equipment Manufacturers (AEM) retail sales data, 2019&ndash;2024.</p>
+    <h2>Equipment Sales (AEM)</h2>
+    <p class="subtitle">Association of Equipment Manufacturers retail sales data, 2017&ndash;2025.</p>
     <div class="chart-grid">
-      <div class="chart-box"><h3>U.S. Tractor Sales by HP Class</h3><div class="chart-note">2019-2020 sub-category figures are estimates; 2022-2024 are exact.</div><div class="chart-wrap"><canvas id="aemSalesChart"></canvas></div></div>
+      <div class="chart-box full"><h3>U.S. Tractor Sales by HP Class</h3><div class="chart-note">Source: AEM monthly flash reports. 4WD reported separately (mostly 250+ HP articulated).</div><div class="chart-wrap"><canvas id="aemSalesChart"></canvas></div></div>
       <div class="chart-box"><h3>Combine Sales</h3><div class="chart-note">Self-propelled combine harvester-thresher retail sales.</div><div class="chart-wrap"><canvas id="aemCombineChart"></canvas></div></div>
+      <div class="chart-box"><h3>Total Tractor Sales (All HP)</h3><div class="chart-note">Sum of all 2WD classes plus 4WD.</div><div class="chart-wrap"><canvas id="aemTotalChart"></canvas></div></div>
     </div>
   </section>
 
@@ -146,24 +151,25 @@ footer{text-align:center;padding:2rem;color:#94a3b8;font-size:.82rem;border-top:
     <h2>Data Sources &amp; Methodology</h2>
     <ul>
       <li><strong>Investment:</strong> BEA/FRED C268RC1A027NBEA (nominal) &amp; C268RX1A020NBEA (real). <a href="https://fred.stlouisfed.org/series/C268RC1A027NBEA">FRED</a></li>
-      <li><strong>Depreciation:</strong> BEA/FRED BOGZ1FA136330023Q (quarterly SAAR, annualized). <a href="https://fred.stlouisfed.org/series/BOGZ1FA136330023Q">FRED</a></li>
+      <li><strong>Depreciation:</strong> BEA/FRED BOGZ1FA136330023Q (quarterly SAAR, annualized). Geometric declining-balance: &delta; = R/T &asymp; 1.65/15 = 11%/yr. <a href="https://fred.stlouisfed.org/series/BOGZ1FA136330023Q">FRED</a></li>
       <li><strong>Net Stock:</strong> BEA/FRED BOGZ1FL135013265Q. <a href="https://fred.stlouisfed.org/series/BOGZ1FL135013265Q">FRED</a></li>
       <li><strong>Prices:</strong> BEA/FRED B268RG3A086NBEA (ag machinery), CPIAUCSL (CPI), A191RD3A086NBEA (GDP deflator), PMAIZMTUSDM (corn). <a href="https://fred.stlouisfed.org/series/B268RG3A086NBEA">FRED</a></li>
+      <li><strong>Interest Rates:</strong> FRED FEDFUNDS (effective fed funds rate), GS10 (10-year Treasury). <a href="https://fred.stlouisfed.org/series/FEDFUNDS">FRED</a></li>
       <li><strong>Census:</strong> USDA Census of Agriculture Tables 44 &amp; 45. <a href="https://quickstats.nass.usda.gov/">Quick Stats</a></li>
-      <li><strong>Trade:</strong> UN Comtrade (2000-09), Census Bureau (2010-24). <a href="https://dataweb.usitc.gov/">USITC</a></li>
+      <li><strong>Trade:</strong> UN Comtrade (2000-09), Census Bureau (2010-24). New/used split: Schedule B .1010 (new) / .1090 (used). <a href="https://dataweb.usitc.gov/">USITC</a></li>
       <li><strong>Sales:</strong> AEM retail reports. <a href="https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports">AEM</a></li>
-      <li><strong>Equipment Life:</strong> Iowa State Extension A3-29. <a href="https://www.extension.iastate.edu/agdm/crops/html/a3-29.html">ISU</a></li>
+      <li><strong>Equipment Life:</strong> Iowa State Extension A3-29 (15-yr / 10,000-12,000 engine hours). <a href="https://www.extension.iastate.edu/agdm/crops/html/a3-29.html">ISU</a></li>
     </ul>
-    <p style="margin-top:1rem;font-size:.82rem;color:#94a3b8"><strong>Methodology:</strong> E/C ratio = gross nominal investment / annualized capital consumption. "Implied replacement cycle" = Census stock / AEM annual retail sales. Most reliable for 100+ HP where virtually all sales go to farms. All price indices rebased to 2017=100.</p>
+    <p style="margin-top:1rem;font-size:.82rem;color:#94a3b8"><strong>Methodology:</strong> E/C ratio = gross nominal investment / annualized capital consumption. "Implied replacement cycle" = Census stock / AEM annual retail sales. BEA depreciation uses geometric declining-balance at rate &delta; = R/T (R &asymp; 1.65 declining-balance factor, T = 15-yr service life). This is a statistical estimate &mdash; actual depreciation depends on hours of use, maintenance, and operating conditions. All price indices rebased to 2017=100. Corn-equivalent bushels: 1 bu soybeans = 2.5 bu corn-eq, 1 bu wheat = 1.2 bu corn-eq (long-run price ratios).</p>
   </div>
 </div>
 <footer><div class="container">Data compiled February 2026. Built from publicly available U.S. government data (BEA, USDA, Census Bureau) and industry sources (AEM).</div></footer>
 
 <script>
 // ============================================================
-// DATA (extended to 1950 where available)
+// DATA
 // ============================================================
-const D = {}; // master data store
+const D = {};
 
 D.investRaw = {1950:1.678,1951:1.760,1952:1.708,1953:1.606,1954:1.416,1955:1.610,1956:1.374,1957:1.385,1958:1.813,1959:1.945,1960:1.573,1961:1.637,1962:1.782,1963:2.240,1964:2.457,1965:2.741,1966:3.269,1967:3.412,1968:3.278,1969:3.432,1970:4.010,1971:3.918,1972:4.797,1973:6.391,1974:6.807,1975:8.546,1976:8.834,1977:9.464,1978:10.734,1979:12.749,1980:11.600,1981:12.611,1982:9.513,1983:8.456,1984:9.121,1985:7.302,1986:6.814,1987:7.179,1988:9.762,1989:11.985,1990:13.597,1991:11.430,1992:10.202,1993:11.864,1994:13.428,1995:13.946,1996:14.088,1997:16.245,1998:17.002,1999:12.625,2000:13.991,2001:14.983,2002:17.353,2003:19.075,2004:21.563,2005:23.565,2006:22.557,2007:23.158,2008:26.892,2009:27.815,2010:25.910,2011:28.970,2012:39.382,2013:46.492,2014:47.959,2015:36.845,2016:29.099,2017:28.745,2018:31.507,2019:35.742,2020:34.624,2021:42.676,2022:47.965,2023:39.931,2024:41.081,2025:36.481};
 
@@ -173,93 +179,132 @@ D.stockRaw = {1950:11.326,1951:12.484,1952:13.286,1953:13.907,1954:13.824,1955:1
 
 D.priceRaw = {1950:8.864,1951:9.368,1952:9.720,1953:9.878,1954:9.972,1955:9.995,1956:10.238,1957:10.646,1958:11.044,1959:11.428,1960:11.640,1961:11.840,1962:12.114,1963:12.314,1964:12.530,1965:12.865,1966:13.276,1967:13.739,1968:14.124,1969:14.716,1970:15.288,1971:15.983,1972:16.718,1973:17.228,1974:19.549,1975:22.944,1976:24.810,1977:26.815,1978:28.992,1979:31.918,1980:36.530,1981:41.038,1982:44.898,1983:46.844,1984:48.044,1985:48.221,1986:50.010,1987:51.051,1988:52.572,1989:54.752,1990:56.721,1991:59.077,1992:61.517,1993:62.877,1994:64.540,1995:65.989,1996:67.495,1997:68.133,1998:68.788,1999:69.966,2000:70.434,2001:71.164,2002:72.047,2003:73.290,2004:75.657,2005:78.807,2006:80.842,2007:83.377,2008:88.023,2009:91.069,2010:91.894,2011:94.573,2012:96.228,2013:96.904,2014:98.389,2015:98.830,2016:99.149,2017:100.000,2018:101.338,2019:102.956,2020:103.637,2021:108.594,2022:121.083,2023:125.870,2024:126.487,2025:129.483};
 
-// Inflation comparison series (2017=100)
+// Inflation comparison (2017=100)
 D.cpiRaw = {1970:15.8,1971:16.5,1972:17.1,1973:18.1,1974:20.1,1975:22.0,1976:23.2,1977:24.7,1978:26.6,1979:29.6,1980:33.6,1981:37.1,1982:39.4,1983:40.6,1984:42.4,1985:43.9,1986:44.8,1987:46.4,1988:48.3,1989:50.6,1990:53.4,1991:55.6,1992:57.2,1993:58.9,1994:60.5,1995:62.2,1996:64.0,1997:65.5,1998:66.5,1999:68.0,2000:70.2,2001:72.2,2002:73.4,2003:75.1,2004:77.1,2005:79.7,2006:82.2,2007:84.6,2008:87.8,2009:87.5,2010:89.0,2011:91.8,2012:93.7,2013:95.0,2014:96.6,2015:96.7,2016:97.9,2017:100.0,2018:102.4,2019:104.3,2020:105.6,2021:110.5,2022:119.4,2023:124.3,2024:128.0,2025:131.3};
 D.gdpDefRaw = {1970:20.2,1971:21.2,1972:22.1,1973:23.3,1974:25.4,1975:27.8,1976:29.3,1977:31.2,1978:33.3,1979:36.1,1980:39.4,1981:43.1,1982:45.8,1983:47.6,1984:49.3,1985:50.8,1986:51.8,1987:53.1,1988:55.0,1989:57.2,1990:59.3,1991:61.3,1992:62.7,1993:64.2,1994:65.6,1995:66.9,1996:68.2,1997:69.3,1998:70.1,1999:71.1,2000:72.7,2001:74.4,2002:75.5,2003:77.0,2004:79.1,2005:81.6,2006:84.1,2007:86.3,2008:88.0,2009:88.6,2010:89.6,2011:91.5,2012:93.2,2013:94.8,2014:96.4,2015:97.3,2016:98.2,2017:100.0,2018:102.3,2019:104.0,2020:105.4,2021:110.2,2022:118.0,2023:122.4,2024:125.4,2025:129.0};
 D.cornRaw = {2003:68.1,2004:72.4,2005:63.7,2006:78.7,2007:105.8,2008:144.5,2009:107.1,2010:120.3,2011:188.8,2012:193.0,2013:167.5,2014:124.8,2015:109.9,2016:103.0,2017:100.0,2018:106.4,2019:110.1,2020:107.1,2021:167.8,2022:205.9,2023:162.7,2024:123.2,2025:131.3};
 
-// Build parallel arrays from raw objects
-function toArrays(raw) { const y=[],v=[]; for(const[k,val] of Object.entries(raw)){y.push(+k);v.push(val);} return{years:y,values:v}; }
+// Macro overlay data
+D.fedFunds = {1955:1.79,1956:2.73,1957:3.11,1958:1.57,1959:3.31,1960:3.22,1961:1.96,1962:2.71,1963:3.18,1964:3.50,1965:4.08,1966:5.11,1967:4.22,1968:5.66,1969:8.20,1970:7.18,1971:4.66,1972:4.43,1973:8.73,1974:10.50,1975:5.82,1976:5.05,1977:5.54,1978:7.93,1979:11.19,1980:13.36,1981:16.38,1982:12.26,1983:9.09,1984:10.23,1985:8.10,1986:6.81,1987:6.66,1988:7.57,1989:9.22,1990:8.10,1991:5.69,1992:3.52,1993:3.02,1994:4.20,1995:5.84,1996:5.30,1997:5.46,1998:5.35,1999:4.97,2000:6.24,2001:3.89,2002:1.67,2003:1.13,2004:1.35,2005:3.21,2006:4.96,2007:5.02,2008:1.93,2009:0.16,2010:0.18,2011:0.10,2012:0.14,2013:0.11,2014:0.09,2015:0.13,2016:0.40,2017:1.00,2018:1.83,2019:2.16,2020:0.38,2021:0.08,2022:1.68,2023:5.02,2024:5.14,2025:4.21};
+D.gs10 = {1962:3.95,1963:4.00,1964:4.19,1965:4.28,1966:4.92,1967:5.07,1968:5.65,1969:6.67,1970:7.35,1971:6.16,1972:6.21,1973:6.84,1974:7.56,1975:7.99,1976:7.61,1977:7.42,1978:8.41,1979:9.44,1980:11.46,1981:13.91,1982:13.00,1983:11.11,1984:12.44,1985:10.62,1986:7.68,1987:8.38,1988:8.85,1989:8.50,1990:8.55,1991:7.86,1992:7.01,1993:5.87,1994:7.08,1995:6.58,1996:6.44,1997:6.35,1998:5.26,1999:5.64,2000:6.03,2001:5.02,2002:4.61,2003:4.02,2004:4.27,2005:4.29,2006:4.79,2007:4.63,2008:3.67,2009:3.26,2010:3.21,2011:2.79,2012:1.80,2013:2.35,2014:2.54,2015:2.14,2016:1.84,2017:2.33,2018:2.91,2019:2.14,2020:0.89,2021:1.44,2022:2.95,2023:3.96,2024:4.21,2025:4.29};
 
-const inv = toArrays(D.investRaw), dep = toArrays(D.deprecRaw), stk = toArrays(D.stockRaw), pri = toArrays(D.priceRaw);
-const ecRatio = inv.values.map((v,i) => +(v/dep.values[i]).toFixed(3));
-const cumulativeNet = []; let _s=0; inv.values.forEach((v,i)=>{_s+=v-dep.values[i]; cumulativeNet.push(+_s.toFixed(1));});
+// Compute CPI YoY%
+D.cpiYoY = {}; const cpiYrs=Object.keys(D.cpiRaw).map(Number).sort((a,b)=>a-b);
+cpiYrs.forEach(y=>{if(D.cpiRaw[y-1]) D.cpiYoY[y]=+((D.cpiRaw[y]/D.cpiRaw[y-1]-1)*100).toFixed(2);});
+// Compute GDP Deflator YoY%
+D.gdpYoY = {}; const gdpYrs=Object.keys(D.gdpDefRaw).map(Number).sort((a,b)=>a-b);
+gdpYrs.forEach(y=>{if(D.gdpDefRaw[y-1]) D.gdpYoY[y]=+((D.gdpDefRaw[y]/D.gdpDefRaw[y-1]-1)*100).toFixed(2);});
 
-// Price comparison: align to common years (1970-2025)
-const priceCompYears = []; for(let y=1970;y<=2025;y++) priceCompYears.push(y);
-const priceCompMach = priceCompYears.map(y=>D.priceRaw[y]||null);
-const priceCompCPI = priceCompYears.map(y=>D.cpiRaw[y]||null);
-const priceCompGDP = priceCompYears.map(y=>D.gdpDefRaw[y]||null);
-const priceCompCorn = priceCompYears.map(y=>D.cornRaw[y]||null);
+// Build parallel arrays
+function toArrays(raw){const y=[],v=[];for(const[k,val] of Object.entries(raw)){y.push(+k);v.push(val);}return{years:y,values:v};}
 
-const realInvYears=[2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024,2025];
-const realInvValues=[27.775,30.552,30.543,28.195,30.632,40.926,47.979,48.745,37.281,29.349,28.745,31.091,34.715,33.409,39.299,39.614,31.724,32.479,28.170];
+const inv=toArrays(D.investRaw),dep=toArrays(D.deprecRaw),stk=toArrays(D.stockRaw),pri=toArrays(D.priceRaw);
+const ecRatio=inv.values.map((v,i)=>+(v/dep.values[i]).toFixed(3));
+const cumulativeNet=[];let _s=0;inv.values.forEach((v,i)=>{_s+=v-dep.values[i];cumulativeNet.push(+_s.toFixed(1));});
 
+// Real investment (all years, computed from nominal / price index)
+const realInvYears=inv.years.slice(),realInvValues=inv.values.map((v,i)=>+(v/(pri.values[i]/100)).toFixed(3));
+
+// Price comparison (1970-2025)
+const priceCompYears=[];for(let y=1970;y<=2025;y++)priceCompYears.push(y);
+const priceCompMach=priceCompYears.map(y=>D.priceRaw[y]||null);
+const priceCompCPI=priceCompYears.map(y=>D.cpiRaw[y]||null);
+const priceCompGDP=priceCompYears.map(y=>D.gdpDefRaw[y]||null);
+const priceCompCorn=priceCompYears.map(y=>D.cornRaw[y]||null);
+
+// Census data
 const censusYears=[2002,2007,2012,2017,2022];
 const fleetLt40=[1415807,1280039,1107528,995918,904843],fleetMid=[2066720,1998508,1886032,1795589,1627056],fleetGt100=[1110018,1111265,1184740,1246592,1252844],fleetTotal=[4592545,4389812,4178300,4038099,3784743];
+// Under 5 years by HP class
+const under5Lt40=[121715,142117,98095,98566,104925],under5Mid=[190945,250743,205388,191415,182774],under5Gt100=[122558,137242,191065,180741,153129];
 const under5Total=[435218,530102,494548,470722,440828];
 const combineTotal=[409442,346935,346632,323347,298301],combineUnder5=[41314,41420,58301,45771,39455],balerTotal=[766457,727501,731771,662339,564948];
 const censusMachValue=[136.6,194.8,244.0,272.3,312.1],censusMachPerOp=[66570,88357,115706,133363,164212];
+// Census per-acre and per-bushel
+const harvestedAcres=[303,310,315,320,301]; // millions
+const cornEquivBu=[17.8,22.2,21.1,27.7,26.3]; // billions
+const perAcre=censusMachValue.map((v,i)=>+(v*1000/harvestedAcres[i]).toFixed(0)); // $/acre
+const perBushel=censusMachValue.map((v,i)=>+(v/cornEquivBu[i]).toFixed(2)); // $/bu-eq
 
-const aemYears=[2019,2020,2021,2022,2023,2024];
-const aemLt40=[150000,177000,193000,173671,156070,134911],aemMid=[65000,73000,77000,67346,61881,55067],aemGt100=[24000,25000,31000,26422,27750,22864],aem4WD=[3200,3300,3900,3469,4564,4358],aemCombines=[5000,5300,6272,7267,7369,5564];
+// AEM data (2017-2025)
+const aemYears=[2017,2018,2019,2020,2021,2022,2023,2024,2025];
+const aemLt40=[141913,154994,162700,197772,215288,173671,156070,134911,122854];
+const aemMid=[59249,60163,60200,68283,75311,67346,61881,55067,52812];
+const aemGt100=[17016,17958,18700,19144,23762,26422,27750,22864,17648];
+const aem4WD=[2427,2741,3000,2988,3536,3469,4564,4358,2543];
+const aemCombines=[4104,4849,4900,5030,6272,7267,7369,5564,3579];
+const aemTotal=aemYears.map((_,i)=>aemLt40[i]+aemMid[i]+aemGt100[i]+aem4WD[i]);
+
 const stock2022={lt40:904843,mid:1627056,gt100:1252844,combines:298301};
-const replCycleLt40=aemLt40.map(s=>+(stock2022.lt40/s).toFixed(1)),replCycleMid=aemMid.map(s=>+(stock2022.mid/s).toFixed(1)),replCycleGt100=aemYears.map((_,i)=>+(stock2022.gt100/(aemGt100[i]+aem4WD[i])).toFixed(1)),replCycleCombines=aemCombines.map(s=>+(stock2022.combines/s).toFixed(1));
+const replCycleLt40=aemLt40.map(s=>+(stock2022.lt40/s).toFixed(1));
+const replCycleMid=aemMid.map(s=>+(stock2022.mid/s).toFixed(1));
+const replCycleGt100=aemYears.map((_,i)=>+(stock2022.gt100/(aemGt100[i]+aem4WD[i])).toFixed(1));
+const replCycleCombines=aemCombines.map(s=>+(stock2022.combines/s).toFixed(1));
 
 const tradeYears=[2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014,2015,2016,2017,2018,2019,2020,2021,2022,2023,2024];
 const tradeImports=[3.476,2.520,3.237,3.264,4.914,5.817,6.344,4.046,5.260,4.388,5.379,7.069,7.945,8.768,11.124,12.206,8.220,9.276,12.616,13.418,9.986,13.132,18.658,19.599,15.627];
 const tradeExports=[2.607,1.976,2.385,2.713,3.397,4.059,4.654,4.861,5.889,3.711,4.493,6.578,8.112,6.205,6.074,5.077,3.973,4.629,5.843,6.018,3.971,5.281,6.301,7.925,6.687];
 const tradeBalance=tradeImports.map((imp,i)=>+(tradeExports[i]-imp).toFixed(3));
-const pctUnder5=under5Total.map((v,i)=>+(v/fleetTotal[i]*100).toFixed(1));
+
+const pctUnder5Lt40=under5Lt40.map((v,i)=>+(v/fleetLt40[i]*100).toFixed(1));
+const pctUnder5Mid=under5Mid.map((v,i)=>+(v/fleetMid[i]*100).toFixed(1));
+const pctUnder5Gt100=under5Gt100.map((v,i)=>+(v/fleetGt100[i]*100).toFixed(1));
 const pctCombineUnder5=combineUnder5.map((v,i)=>+(v/combineTotal[i]*100).toFixed(1));
 
 // ============================================================
 // CHART FACTORY
 // ============================================================
 Chart.defaults.font.family="-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif";
-Chart.defaults.font.size=12; Chart.defaults.color='#64748b';
+Chart.defaults.font.size=12;Chart.defaults.color='#64748b';
 Chart.defaults.plugins.legend.labels.usePointStyle=true;
 Chart.defaults.plugins.legend.labels.pointStyleWidth=12;
 Chart.defaults.elements.line.tension=0.25;
 
-const C={blue:'#2563eb',lightblue:'#60a5fa',green:'#16a34a',red:'#dc2626',orange:'#f59e0b',purple:'#7c3aed',gray:'#94a3b8',darkblue:'#1e3a5f',teal:'#0d9488',maroon:'#991b1b'};
+const C={blue:'#2563eb',lightblue:'#60a5fa',green:'#16a34a',red:'#dc2626',orange:'#f59e0b',purple:'#7c3aed',gray:'#94a3b8',darkblue:'#1e3a5f',teal:'#0d9488',maroon:'#991b1b',pink:'#ec4899'};
 const lineDs=(label,data,color,extra={})=>({label,data,borderColor:color,backgroundColor:color+'15',fill:false,borderWidth:2.5,pointRadius:0,pointHitRadius:8,...extra});
 const barDs=(label,data,color,extra={})=>({label,data,backgroundColor:color,borderRadius:2,...extra});
-const scl=(yTitle,extra={})=>({y:{title:{display:true,text:yTitle},grid:{color:'#f1f5f9'},...(extra.y||{})},x:{grid:{display:false},...(extra.x||{})}});
-const sclStk=(yTitle)=>({y:{stacked:true,title:{display:true,text:yTitle},grid:{color:'#f1f5f9'}},x:{stacked:true,grid:{display:false}}});
+const scl=(yTitle,extra={})=>({y:{title:{display:true,text:yTitle},grid:{color:'#f1f5f9'},...(extra.y||{})},x:{type:'linear',grid:{display:false},ticks:{callback:v=>Number.isInteger(v)?v:''},...(extra.x||{})}});
+const sclStk=(yTitle)=>({y:{stacked:true,title:{display:true,text:yTitle},grid:{color:'#f1f5f9'}},x:{type:'linear',stacked:true,grid:{display:false},ticks:{callback:v=>Number.isInteger(v)?v:''}}});
 
-// CSV download helper
-function downloadCSV(filename, labels, datasets) {
+// Overlay definitions (right-axis toggles available on every chart)
+const OVERLAYS=[
+  {key:'cpiYoY',label:'CPI Inflation (YoY %)',data:D.cpiYoY,color:C.blue,dash:[6,3]},
+  {key:'gdpYoY',label:'GDP Deflator (YoY %)',data:D.gdpYoY,color:C.gray,dash:[3,3]},
+  {key:'fedFunds',label:'Fed Funds Rate (%)',data:D.fedFunds,color:C.purple,dash:[8,4]},
+  {key:'gs10',label:'10Y Treasury (%)',data:D.gs10,color:C.teal,dash:[4,2]}
+];
+
+function downloadCSV(filename,labels,datasets){
   const heads=['Year',...datasets.map(d=>d.label)];
-  const rows=labels.map((l,i)=>[l,...datasets.map(d=>{const v=d.data[i]; return v==null?'':v;})]);
+  const rows=labels.map((l,i)=>[l,...datasets.map(d=>{const v=d.data[i];return v==null?'':v;})]);
   const csv=[heads.join(','),...rows.map(r=>r.join(','))].join('\n');
-  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
-  a.download=filename; a.click();
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=filename;a.click();
 }
 
 // Close all popovers on outside click
-document.addEventListener('click',()=>document.querySelectorAll('.info-pop.open').forEach(p=>p.classList.remove('open')));
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.icon-wrap'))document.querySelectorAll('.icon-pop.open').forEach(p=>p.classList.remove('open'));
+});
 
 /**
  * makeChart(id, config, meta)
- * meta: { sources: [{label,url}], ranges: [{label,min,max}], defaultRange:idx, csvName }
+ * meta: { sources, ranges, defaultRange, csvName, formulaNote }
  */
-function makeChart(id, config, meta={}) {
-  const canvas=document.getElementById(id), box=canvas.closest('.chart-box');
-
-  // Build toolbar
-  const toolbar=document.createElement('div'); toolbar.className='chart-toolbar';
+function makeChart(id,config,meta={}){
+  const canvas=document.getElementById(id),box=canvas.closest('.chart-box');
+  const toolbar=document.createElement('div');toolbar.className='chart-toolbar';
 
   // Range buttons
-  const rangeDiv=document.createElement('div'); rangeDiv.className='range-btns';
-  if(meta.ranges&&meta.ranges.length>1) {
+  const rangeDiv=document.createElement('div');rangeDiv.className='range-btns';
+  if(meta.ranges&&meta.ranges.length>1){
     meta.ranges.forEach((r,idx)=>{
-      const b=document.createElement('button'); b.textContent=r.label;
-      if(idx===(meta.defaultRange||0)) b.classList.add('active');
+      const b=document.createElement('button');b.textContent=r.label;
+      if(idx===(meta.defaultRange||0))b.classList.add('active');
       b.addEventListener('click',()=>{
-        rangeDiv.querySelectorAll('button').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+        rangeDiv.querySelectorAll('button').forEach(x=>x.classList.remove('active'));b.classList.add('active');
         chart.resetZoom();
-        chart.options.scales.x.min=r.min; chart.options.scales.x.max=r.max; chart.update('none');
+        chart.options.scales.x.min=r.min;chart.options.scales.x.max=r.max;chart.update('none');
         resetBtn.style.display='none';
       });
       rangeDiv.appendChild(b);
@@ -267,67 +312,117 @@ function makeChart(id, config, meta={}) {
   }
   toolbar.appendChild(rangeDiv);
 
-  // Actions (reset + info)
-  const actions=document.createElement('div'); actions.className='chart-actions';
-  const resetBtn=document.createElement('button'); resetBtn.className='reset-btn'; resetBtn.textContent='Reset Zoom';
+  // Actions
+  const actions=document.createElement('div');actions.className='chart-actions';
+  const resetBtn=document.createElement('button');resetBtn.className='reset-btn';resetBtn.textContent='Reset';
   actions.appendChild(resetBtn);
 
-  // Info (?) button
-  const infoWrap=document.createElement('div'); infoWrap.className='info-wrap';
-  const infoBtn=document.createElement('button'); infoBtn.className='info-btn'; infoBtn.textContent='?';
-  const infoPop=document.createElement('div'); infoPop.className='info-pop';
+  // Gear icon (overlays)
+  const gearWrap=document.createElement('div');gearWrap.className='icon-wrap';
+  const gearBtn=document.createElement('button');gearBtn.className='icon-btn';gearBtn.innerHTML='&#9881;';
+  const gearPop=document.createElement('div');gearPop.className='icon-pop';
+  gearPop.innerHTML='<h4>Overlay (Right Axis)</h4><ul>'+OVERLAYS.map(o=>'<li><label><input type="checkbox" data-overlay="'+o.key+'"> '+o.label+'</label></li>').join('')+'</ul>';
+  gearBtn.addEventListener('click',e=>{e.stopPropagation();gearPop.classList.toggle('open');});
+  gearWrap.appendChild(gearBtn);gearWrap.appendChild(gearPop);
+  actions.appendChild(gearWrap);
+
+  // Info (?) icon
+  const infoWrap=document.createElement('div');infoWrap.className='icon-wrap';
+  const infoBtn=document.createElement('button');infoBtn.className='icon-btn';infoBtn.textContent='?';
+  const infoPop=document.createElement('div');infoPop.className='icon-pop';
   let popHTML='<h4>Data Sources</h4><ul>';
-  (meta.sources||[]).forEach(s=>{ popHTML+=`<li><a href="${s.url}" target="_blank">${s.label}</a></li>`; });
+  (meta.sources||[]).forEach(s=>{popHTML+='<li><a href="'+s.url+'" target="_blank">'+s.label+'</a></li>';});
   popHTML+='</ul>';
+  if(meta.formulaNote) popHTML+='<div class="formula-note">'+meta.formulaNote+'</div>';
   infoPop.innerHTML=popHTML;
-  const csvBtn=document.createElement('button'); csvBtn.className='csv-btn'; csvBtn.textContent='Download CSV';
+  const csvBtn=document.createElement('button');csvBtn.className='csv-btn';csvBtn.textContent='Download CSV';
   infoPop.appendChild(csvBtn);
-  infoBtn.addEventListener('click',(e)=>{e.stopPropagation(); infoPop.classList.toggle('open');});
-  infoWrap.appendChild(infoBtn); infoWrap.appendChild(infoPop);
+  infoBtn.addEventListener('click',e=>{e.stopPropagation();infoPop.classList.toggle('open');});
+  infoWrap.appendChild(infoBtn);infoWrap.appendChild(infoPop);
   actions.appendChild(infoWrap);
   toolbar.appendChild(actions);
-  box.insertBefore(toolbar, box.querySelector('.chart-wrap'));
+  box.insertBefore(toolbar,box.querySelector('.chart-wrap'));
 
-  // Chart config: inject zoom + responsive
-  const opts=config.options=config.options||{}; opts.responsive=true; opts.maintainAspectRatio=false;
-  if(!opts.plugins) opts.plugins={};
+  // Chart config: inject zoom
+  const opts=config.options=config.options||{};opts.responsive=true;opts.maintainAspectRatio=false;
+  if(!opts.plugins)opts.plugins={};
   const showReset=()=>{resetBtn.style.display='block';};
-  opts.plugins.zoom={pan:{enabled:true,mode:'xy',onPan:showReset},zoom:{wheel:{enabled:true,speed:0.05},pinch:{enabled:true},mode:'xy',onZoom:showReset}};
+  opts.plugins.zoom={pan:{enabled:true,mode:'xy',overScaleMode:'xy',onPan:showReset},zoom:{wheel:{enabled:true,speed:0.05},pinch:{enabled:true},mode:'xy',overScaleMode:'xy',onZoom:showReset}};
 
   // Set initial range
   if(meta.ranges&&meta.ranges.length>1){
     const dr=meta.ranges[meta.defaultRange||0];
-    if(!opts.scales) opts.scales={};
-    if(!opts.scales.x) opts.scales.x={};
-    opts.scales.x.min=dr.min; opts.scales.x.max=dr.max;
+    if(!opts.scales)opts.scales={};if(!opts.scales.x)opts.scales.x={};
+    opts.scales.x.min=dr.min;opts.scales.x.max=dr.max;
   }
 
   const chart=new Chart(canvas,config);
 
-  // Reset button: reset zoom AND go back to default range
+  // Track active overlays
+  const activeOverlays=new Set();
+
+  function toggleOverlay(key,on){
+    const ov=OVERLAYS.find(o=>o.key===key);if(!ov)return;
+    if(on&&!activeOverlays.has(key)){
+      // Add dataset aligned to chart labels
+      const labels=config.data.labels;
+      const aligned=labels.map(y=>ov.data[y]!=null?ov.data[y]:null);
+      chart.data.datasets.push({
+        label:ov.label,data:aligned,borderColor:ov.color,backgroundColor:ov.color+'15',
+        borderWidth:1.8,borderDash:ov.dash,pointRadius:0,pointHitRadius:6,
+        fill:false,yAxisID:'yOverlay',_overlayKey:key
+      });
+      activeOverlays.add(key);
+    } else if(!on&&activeOverlays.has(key)){
+      chart.data.datasets=chart.data.datasets.filter(ds=>ds._overlayKey!==key);
+      activeOverlays.delete(key);
+    }
+    // Show/hide right axis
+    if(activeOverlays.size>0){
+      chart.options.scales.yOverlay={position:'right',title:{display:true,text:'%'},grid:{display:false},ticks:{color:'#7c3aed80'}};
+    } else {
+      delete chart.options.scales.yOverlay;
+    }
+    chart.update();
+  }
+
+  // Wire up gear checkboxes
+  gearPop.querySelectorAll('input[data-overlay]').forEach(cb=>{
+    cb.addEventListener('change',()=>toggleOverlay(cb.dataset.overlay,cb.checked));
+  });
+
+  // Reset: zoom + range + overlays
   resetBtn.addEventListener('click',()=>{
     chart.resetZoom();
     if(meta.ranges&&meta.ranges.length>1){
       const dr=meta.ranges[meta.defaultRange||0];
-      chart.options.scales.x.min=dr.min; chart.options.scales.x.max=dr.max;
-      chart.update('none');
+      chart.options.scales.x.min=dr.min;chart.options.scales.x.max=dr.max;
       rangeDiv.querySelectorAll('button').forEach((b,i)=>{b.classList.toggle('active',i===(meta.defaultRange||0));});
     }
+    // Clear overlays
+    activeOverlays.forEach(k=>{
+      chart.data.datasets=chart.data.datasets.filter(ds=>ds._overlayKey!==k);
+    });
+    activeOverlays.clear();
+    delete chart.options.scales.yOverlay;
+    gearPop.querySelectorAll('input[data-overlay]').forEach(cb=>{cb.checked=false;});
+    chart.update('none');
     resetBtn.style.display='none';
   });
 
-  // CSV download
+  // CSV download (exclude overlay datasets)
   csvBtn.addEventListener('click',()=>{
-    downloadCSV(meta.csvName||id+'.csv', config.data.labels, config.data.datasets);
+    const mainDs=config.data.datasets.filter(ds=>!ds._overlayKey);
+    downloadCSV(meta.csvName||id+'.csv',config.data.labels,mainDs);
     infoPop.classList.remove('open');
   });
 
   return chart;
 }
 
-// Common range presets for 1950-2025 data
+// Range presets
 const longRanges=[{label:'All',min:undefined,max:undefined},{label:'1970+',min:1970,max:undefined},{label:'Last 20Y',min:2006,max:undefined},{label:'Last 10Y',min:2016,max:undefined}];
-const longDefault=1; // "1970+" by default
+const longDefault=1;
 
 // ============================================================
 // CHARTS
@@ -338,7 +433,7 @@ makeChart('investVsDeprecChart',{
   type:'line',
   data:{labels:inv.years,datasets:[lineDs('Gross Investment',inv.values,C.green),lineDs('Depreciation',dep.values,C.red,{borderDash:[6,3]})]},
   options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toFixed(1)+'B'}},annotation:{annotations:{farmCrisis:{type:'box',xMin:1982,xMax:1987,backgroundColor:'rgba(220,38,38,0.06)',borderWidth:0,label:{display:true,content:'Farm Crisis',position:'start',font:{size:10},color:'#dc262680'}},boom:{type:'box',xMin:2012,xMax:2014,backgroundColor:'rgba(22,163,74,0.06)',borderWidth:0,label:{display:true,content:'Commodity Boom',position:'start',font:{size:10},color:'#16a34a80'}},now:{type:'box',xMin:2023,xMax:2025,backgroundColor:'rgba(220,38,38,0.06)',borderWidth:0,label:{display:true,content:'Current Downturn',position:'start',font:{size:10},color:'#dc262680'}}}}},scales:scl('Billions USD (nominal)')}
-},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'investment_vs_depreciation.csv'});
+},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'investment_vs_depreciation.csv',formulaNote:'<strong>BEA Depreciation Formula:</strong> Geometric declining-balance: &delta; = R / T, where R &asymp; 1.65 (declining-balance rate) and T = 15 years (service life). Annual depreciation &asymp; 11% of current-cost net stock. This is a statistical estimate based on asset age, not actual usage hours.'});
 
 // 2. E/C Ratio
 makeChart('ecRatioChart',{
@@ -352,65 +447,108 @@ makeChart('cumulativeNetChart',{
   type:'line',
   data:{labels:inv.years,datasets:[{label:'Cumulative Net Investment',data:cumulativeNet,borderColor:C.darkblue,backgroundColor:cumulativeNet.map(v=>v>=0?C.green+'30':C.red+'30'),fill:true,borderWidth:2,pointRadius:0,pointHitRadius:8,segment:{borderColor:ctx=>ctx.p1.parsed.y>=0?C.green:C.red}}]},
   options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>'Cumulative: $'+ctx.parsed.y.toFixed(1)+'B'}},annotation:{annotations:{zero:{type:'line',yMin:0,yMax:0,borderColor:'#94a3b8',borderWidth:1,borderDash:[4,4]}}}},scales:scl('Cumulative $ Billions')}
-},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'cumulative_net_investment.csv'});
+},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'cumulative_net_investment.csv',formulaNote:'This is cumulative (investment &minus; depreciation) from 1950 onward. It does <strong>not</strong> account for international trade in used equipment. Some domestically-invested tractors are later exported as used, meaning the actual productive domestic stock may be lower than this suggests. The BEA net stock series (BOGZ1FL135013265Q) is the more complete measure.'});
+
+// 3b. Rolling & Decay-Weighted Net Investment
+const netAnnual=inv.values.map((v,i)=>+(v-dep.values[i]).toFixed(2));
+// L10Y rolling sum
+const l10y=inv.years.map((_,i)=>{const start=Math.max(0,i-9);let s=0;for(let j=start;j<=i;j++)s+=netAnnual[j];return+s.toFixed(1);});
+// L5Y rolling sum
+const l5y=inv.years.map((_,i)=>{const start=Math.max(0,i-4);let s=0;for(let j=start;j<=i;j++)s+=netAnnual[j];return+s.toFixed(1);});
+// Decay-weighted (half-life 7 years, lambda=ln2/7≈0.099)
+const decayLambda=Math.LN2/7;
+const decayNet=inv.years.map((_,i)=>{let s=0;for(let j=0;j<=i;j++){s+=netAnnual[j]*Math.exp(-decayLambda*(i-j));}return+s.toFixed(1);});
+
+makeChart('rollingNetChart',{type:'line',data:{labels:inv.years,datasets:[
+  lineDs('L10Y Net Investment',l10y,C.blue,{borderWidth:2.5}),
+  lineDs('L5Y Net Investment',l5y,C.lightblue,{borderWidth:2,borderDash:[6,3]}),
+  lineDs('Decay-Weighted (7yr half-life)',decayNet,C.purple,{borderWidth:2}),
+  lineDs('Annual Net',netAnnual,C.gray,{borderWidth:1,borderDash:[2,2]})
+]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toFixed(1)+'B'}},annotation:{annotations:{zero:{type:'line',yMin:0,yMax:0,borderColor:'#94a3b8',borderWidth:1,borderDash:[4,4]}}}},scales:scl('$ Billions')}
+},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'rolling_net_investment.csv',formulaNote:'L10Y/L5Y = rolling sum of (investment - depreciation) over last 10/5 years. Decay-weighted = &Sigma; net<sub>t-k</sub> &middot; e<sup>-&lambda;k</sup> where &lambda; = ln(2)/7 &asymp; 0.099 (7-year half-life). Recent investment contributes more; older investment fades.'});
 
 // 4. Fleet by HP
-makeChart('fleetByHPChart',{type:'bar',data:{labels:censusYears,datasets:[barDs('100+ HP',fleetGt100.map(v=>v/1e6),C.red),barDs('40-99 HP',fleetMid.map(v=>v/1e6),C.orange),barDs('Under 40 HP',fleetLt40.map(v=>v/1e6),C.lightblue)]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.y*1e6).toLocaleString()+' units'}}},scales:sclStk('Millions of Tractors')}},{sources:[{label:'USDA Census of Agriculture, Table 45',url:'https://quickstats.nass.usda.gov/'}],csvName:'fleet_by_hp_class.csv'});
+makeChart('fleetByHPChart',{type:'bar',data:{labels:censusYears,datasets:[barDs('100+ HP',fleetGt100.map(v=>v/1e6),C.red),barDs('40-99 HP',fleetMid.map(v=>v/1e6),C.orange),barDs('Under 40 HP',fleetLt40.map(v=>v/1e6),C.lightblue)]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.y*1e6).toLocaleString()+' units'}}},scales:sclStk('Millions of Tractors')}},{sources:[{label:'USDA Census of Agriculture, Table 45',url:'https://quickstats.nass.usda.gov/'}],csvName:'fleet_by_hp_class.csv',formulaNote:'The USDA Census of Agriculture reports only 3 HP categories nationally: Under 40, 40-99, and 100+ HP (PTO). Finer breakdowns (e.g. 100-139, 140-179, 180+) are not published in the standard Census tables.'});
 
 // 5. Other Equipment
 makeChart('otherEquipChart',{type:'bar',data:{labels:censusYears,datasets:[barDs('Combines',combineTotal.map(v=>v/1000),C.teal),barDs('Balers',balerTotal.map(v=>v/1000),C.purple)]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.y*1000).toLocaleString()+' units'}}},scales:scl('Thousands of Units')}},{sources:[{label:'USDA Census of Agriculture, Table 45',url:'https://quickstats.nass.usda.gov/'}],csvName:'other_equipment.csv'});
 
-// 6. Age Share
-makeChart('ageShareChart',{type:'bar',data:{labels:censusYears,datasets:[barDs('Tractors (all HP)',pctUnder5,C.blue),barDs('Combines',pctCombineUnder5,C.teal)]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+'%'}},annotation:{annotations:{t:{type:'line',yMin:33.3,yMax:33.3,borderColor:C.green,borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'Healthy (33%)',position:'start',backgroundColor:'#16a34a20',color:C.green,font:{size:10}}}}}},scales:scl('% Under 5 Years Old',{y:{max:40}})}},{sources:[{label:'USDA Census of Agriculture, Table 45',url:'https://quickstats.nass.usda.gov/'}],csvName:'fleet_age_share.csv'});
+// 6. Age Share by HP Class
+makeChart('ageShareChart',{type:'bar',data:{labels:censusYears,datasets:[
+  barDs('Under 40 HP',pctUnder5Lt40,C.lightblue+'cc'),
+  barDs('40-99 HP',pctUnder5Mid,C.orange+'cc'),
+  barDs('100+ HP',pctUnder5Gt100,C.red+'cc'),
+  barDs('Combines',pctCombineUnder5,C.teal+'cc')
+]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+'%'}},annotation:{annotations:{t:{type:'line',yMin:33.3,yMax:33.3,borderColor:C.green,borderWidth:1.5,borderDash:[6,4],label:{display:true,content:'Healthy (33%)',position:'start',backgroundColor:'#16a34a20',color:C.green,font:{size:10}}}}}},scales:scl('% Under 5 Years Old',{y:{max:40}})}},{sources:[{label:'USDA Census of Agriculture, Table 45',url:'https://quickstats.nass.usda.gov/'}],csvName:'fleet_age_share_by_hp.csv'});
 
 // 7. Replacement Cycle Snapshot
 makeChart('replacementCycleChart',{type:'bar',data:{labels:['Under 40 HP','40-100 HP','100+ HP','Combines'],datasets:[
-  barDs('2021 (Boom)',[+(stock2022.lt40/aemLt40[2]).toFixed(1),+(stock2022.mid/aemMid[2]).toFixed(1),+(stock2022.gt100/(aemGt100[2]+aem4WD[2])).toFixed(1),+(stock2022.combines/aemCombines[2]).toFixed(1)],C.green+'90'),
-  barDs('2022',[+(stock2022.lt40/aemLt40[3]).toFixed(1),+(stock2022.mid/aemMid[3]).toFixed(1),+(stock2022.gt100/(aemGt100[3]+aem4WD[3])).toFixed(1),+(stock2022.combines/aemCombines[3]).toFixed(1)],C.orange+'90'),
-  barDs('2024 (Downturn)',[+(stock2022.lt40/aemLt40[5]).toFixed(1),+(stock2022.mid/aemMid[5]).toFixed(1),+(stock2022.gt100/(aemGt100[5]+aem4WD[5])).toFixed(1),+(stock2022.combines/aemCombines[5]).toFixed(1)],C.red+'90')
+  barDs('2021 (Boom)',[+(stock2022.lt40/aemLt40[4]).toFixed(1),+(stock2022.mid/aemMid[4]).toFixed(1),+(stock2022.gt100/(aemGt100[4]+aem4WD[4])).toFixed(1),+(stock2022.combines/aemCombines[4]).toFixed(1)],C.green+'90'),
+  barDs('2022',[+(stock2022.lt40/aemLt40[5]).toFixed(1),+(stock2022.mid/aemMid[5]).toFixed(1),+(stock2022.gt100/(aemGt100[5]+aem4WD[5])).toFixed(1),+(stock2022.combines/aemCombines[5]).toFixed(1)],C.orange+'90'),
+  barDs('2024',[+(stock2022.lt40/aemLt40[7]).toFixed(1),+(stock2022.mid/aemMid[7]).toFixed(1),+(stock2022.gt100/(aemGt100[7]+aem4WD[7])).toFixed(1),+(stock2022.combines/aemCombines[7]).toFixed(1)],C.red+'90')
 ]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+' years'}},annotation:{annotations:{t:{type:'line',yMin:15,yMax:15,borderColor:C.red,borderWidth:2,borderDash:[8,4],label:{display:true,content:'15-yr recommended life',position:'end',backgroundColor:'#dc262620',color:C.red,font:{size:11,weight:'bold'}}}}}},scales:scl('Years to Replace Fleet',{y:{max:60}})}},{sources:[{label:'USDA Census of Agriculture',url:'https://quickstats.nass.usda.gov/'},{label:'AEM Sales Reports',url:'https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports'}],csvName:'replacement_cycle_snapshot.csv'});
 
-// 8. Replacement Cycle Over Time
+// 8. Replacement Cycle Over Time (2017-2025)
 makeChart('replacementCycleTimeChart',{type:'line',data:{labels:aemYears,datasets:[
-  lineDs('100+ HP (2WD+4WD)',replCycleGt100,C.red,{pointRadius:4}),lineDs('Combines',replCycleCombines,C.teal,{pointRadius:4}),lineDs('40-100 HP',replCycleMid,C.orange,{pointRadius:4}),lineDs('Under 40 HP',replCycleLt40,C.lightblue,{borderWidth:2,pointRadius:4,borderDash:[4,3]})
-]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+' years'}},annotation:{annotations:{t:{type:'line',yMin:15,yMax:15,borderColor:C.red,borderWidth:2,borderDash:[8,4],label:{display:true,content:'15-yr recommended life',position:'end',backgroundColor:'#dc262620',color:C.red,font:{size:11}}}}}},scales:scl('Years to Replace Fleet',{y:{min:0,max:65}})}},{sources:[{label:'USDA Census of Agriculture',url:'https://quickstats.nass.usda.gov/'},{label:'AEM Sales Reports',url:'https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports'}],csvName:'replacement_cycle_time.csv'});
+  lineDs('100+ HP (2WD+4WD)',replCycleGt100,C.red,{pointRadius:4}),
+  lineDs('Combines',replCycleCombines,C.teal,{pointRadius:4}),
+  lineDs('40-100 HP',replCycleMid,C.orange,{pointRadius:4}),
+  lineDs('Under 40 HP',replCycleLt40,C.lightblue,{borderWidth:2,pointRadius:4,borderDash:[4,3]})
+]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+ctx.parsed.y+' years'}},annotation:{annotations:{t:{type:'line',yMin:15,yMax:15,borderColor:C.red,borderWidth:2,borderDash:[8,4],label:{display:true,content:'15-yr recommended life',position:'end',backgroundColor:'#dc262620',color:C.red,font:{size:11}}}}}},scales:scl('Years to Replace Fleet',{y:{min:0}})}},{sources:[{label:'USDA Census of Agriculture',url:'https://quickstats.nass.usda.gov/'},{label:'AEM Sales Reports',url:'https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports'}],csvName:'replacement_cycle_time.csv'});
 
-// 9. Price Comparison (full width, 4 series)
+// 9. Price Comparison
 makeChart('priceCompareChart',{type:'line',data:{labels:priceCompYears,datasets:[
   lineDs('Ag Machinery',priceCompMach,C.red,{borderWidth:3}),
   lineDs('Corn Price',priceCompCorn,C.green,{borderWidth:2.5,spanGaps:false}),
   lineDs('CPI-U (All Items)',priceCompCPI,C.blue,{borderWidth:1.5,borderDash:[6,3]}),
   lineDs('GDP Deflator',priceCompGDP,C.gray,{borderWidth:1.5,borderDash:[3,3]})
-]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y; return v==null?'':ctx.dataset.label+': '+v.toFixed(1)+' (2017=100)';}}},annotation:{annotations:{base:{type:'line',yMin:100,yMax:100,borderColor:'#94a3b880',borderWidth:1,borderDash:[4,4],label:{display:true,content:'2017 = 100',position:'end',color:'#94a3b8',font:{size:10}}}}}},scales:scl('Index (2017 = 100)')}
+]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>{const v=ctx.parsed.y;return v==null?'':ctx.dataset.label+': '+v.toFixed(1)+' (2017=100)';}}},annotation:{annotations:{base:{type:'line',yMin:100,yMax:100,borderColor:'#94a3b880',borderWidth:1,borderDash:[4,4],label:{display:true,content:'2017 = 100',position:'end',color:'#94a3b8',font:{size:10}}}}}},scales:scl('Index (2017 = 100)')}
 },{sources:[{label:'FRED: Ag Machinery (B268RG3A086NBEA)',url:'https://fred.stlouisfed.org/series/B268RG3A086NBEA'},{label:'FRED: CPI-U (CPIAUCSL)',url:'https://fred.stlouisfed.org/series/CPIAUCSL'},{label:'FRED: GDP Deflator (A191RD3A086NBEA)',url:'https://fred.stlouisfed.org/series/A191RD3A086NBEA'},{label:'FRED: Corn Price (PMAIZMTUSDM)',url:'https://fred.stlouisfed.org/series/PMAIZMTUSDM'}],ranges:[{label:'All',min:undefined,max:undefined},{label:'2000+',min:2000,max:undefined},{label:'Last 10Y',min:2016,max:undefined}],defaultRange:0,csvName:'price_comparison.csv'});
 
 // 10. Net Capital Stock
 makeChart('netStockChart',{type:'line',data:{labels:stk.years,datasets:[lineDs('Net Capital Stock',stk.values,C.darkblue,{fill:true})]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>'$'+ctx.parsed.y.toFixed(1)+'B'}}},scales:scl('Billions USD')}
 },{sources:[{label:'FRED: BOGZ1FL135013265Q',url:'https://fred.stlouisfed.org/series/BOGZ1FL135013265Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'net_capital_stock.csv'});
 
-// 11. Real Investment
+// 11. Real Investment (full 1950-2025)
 makeChart('realInvestChart',{type:'bar',data:{labels:realInvYears,datasets:[barDs('Real Investment (2017$)',realInvValues,realInvValues.map(v=>v>=35?C.green+'80':v>=30?C.orange+'80':C.red+'80'),{backgroundColor:realInvValues.map(v=>v>=35?C.green+'80':v>=30?C.orange+'80':C.red+'80'),borderRadius:3})]},options:{plugins:{tooltip:{callbacks:{label:ctx=>'$'+ctx.parsed.y.toFixed(1)+'B (2017$)'}},annotation:{annotations:{pk:{type:'line',yMin:48.745,yMax:48.745,borderColor:'#94a3b8',borderWidth:1,borderDash:[4,4],label:{display:true,content:'2014 peak: $48.7B',position:'start',color:'#94a3b8',font:{size:10}}}}}},scales:scl('Billions (2017 USD)')}
-},{sources:[{label:'FRED: C268RX1A020NBEA',url:'https://fred.stlouisfed.org/series/C268RX1A020NBEA'}],csvName:'real_investment.csv'});
+},{sources:[{label:'FRED: C268RX1A020NBEA (2007+)',url:'https://fred.stlouisfed.org/series/C268RX1A020NBEA'},{label:'Computed: C268RC1A027NBEA / B268RG3A086NBEA (pre-2007)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'}],ranges:longRanges,defaultRange:longDefault,csvName:'real_investment.csv'});
 
-// 12. Census Machinery Value
-makeChart('censusMachValueChart',{type:'bar',data:{labels:censusYears,datasets:[barDs('Total Machinery Value',censusMachValue,C.darkblue+'90',{borderRadius:3,yAxisID:'y'}),{label:'Avg Per Operation',data:censusMachPerOp.map(v=>v/1000),borderColor:C.orange,backgroundColor:C.orange,type:'line',borderWidth:2.5,pointRadius:5,yAxisID:'y1'}]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>{if(ctx.datasetIndex===0)return'$'+ctx.parsed.y.toFixed(1)+'B total';return'$'+(ctx.parsed.y*1000).toLocaleString()+' per farm';}}}},scales:{y:{title:{display:true,text:'Total ($B)'},position:'left',grid:{color:'#f1f5f9'}},y1:{title:{display:true,text:'Avg Per Farm ($K)'},position:'right',grid:{display:false}},x:{grid:{display:false}}}}
-},{sources:[{label:'USDA Census of Agriculture, Table 44',url:'https://quickstats.nass.usda.gov/'}],csvName:'census_machinery_value.csv'});
+// 12. Census Machinery Value (3 y-axes: total $B, $/acre, $/bushel)
+makeChart('censusMachValueChart',{type:'bar',data:{labels:censusYears,datasets:[
+  barDs('Total Value ($B)',censusMachValue,C.darkblue+'90',{yAxisID:'y',borderRadius:3}),
+  {label:'Per Harvested Acre ($)',data:perAcre,borderColor:C.orange,backgroundColor:C.orange,type:'line',borderWidth:2.5,pointRadius:5,yAxisID:'y1'},
+  {label:'Per Corn-Eq Bushel ($)',data:perBushel,borderColor:C.green,backgroundColor:C.green,type:'line',borderWidth:2.5,pointRadius:5,borderDash:[6,3],yAxisID:'y2'}
+]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>{
+  if(ctx.datasetIndex===0)return'$'+ctx.parsed.y.toFixed(1)+'B total';
+  if(ctx.datasetIndex===1)return'$'+ctx.parsed.y.toLocaleString()+'/harvested acre';
+  return'$'+ctx.parsed.y.toFixed(2)+'/corn-eq bushel';
+}}}},scales:{y:{title:{display:true,text:'Total ($B)'},position:'left',grid:{color:'#f1f5f9'}},y1:{title:{display:true,text:'$/Harvested Acre'},position:'right',grid:{display:false}},y2:{title:{display:true,text:'$/Corn-Eq Bu'},position:'right',grid:{display:false},ticks:{color:C.green}},x:{type:'linear',grid:{display:false},ticks:{callback:v=>Number.isInteger(v)?v:''}}}}
+},{sources:[{label:'USDA Census of Agriculture, Table 44',url:'https://quickstats.nass.usda.gov/'},{label:'USDA NASS: Harvested Cropland Acres',url:'https://quickstats.nass.usda.gov/'},{label:'USDA: Corn, Soybean, Wheat Production',url:'https://www.nass.usda.gov/'}],csvName:'census_machinery_value.csv',formulaNote:'Per-acre = total market value / harvested cropland acres. Per-bushel = total value / corn-equivalent bushels (soybeans at 2.5x, wheat at 1.2x corn price ratios). Harvested acres: 303M, 310M, 315M, 320M, 301M. Corn-eq: 17.8B, 22.2B, 21.1B, 27.7B, 26.3B bushels.'});
 
 // 13. Trade Flows
 makeChart('tradeFlowChart',{type:'line',data:{labels:tradeYears,datasets:[lineDs('Imports',tradeImports,C.red),lineDs('Exports',tradeExports,C.green)]},options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toFixed(1)+'B'}}},scales:scl('Billions USD')}
-},{sources:[{label:'UN Comtrade (2000-2009)',url:'https://comtradeplus.un.org/'},{label:'USITC DataWeb (2010-2024)',url:'https://dataweb.usitc.gov/'}],csvName:'tractor_trade_flows.csv'});
+},{sources:[{label:'UN Comtrade (2000-2009)',url:'https://comtradeplus.un.org/'},{label:'USITC DataWeb (2010-2024)',url:'https://dataweb.usitc.gov/'}],csvName:'tractor_trade_flows.csv',formulaNote:'HS 8701 (all tractors). New/used split available at 10-digit Schedule B level: .1010 = new (mfr/dealer-to-dealer), .1090 = used (previously sold to end user). Query USITC DataWeb for the breakdown.'});
 
 // 14. Trade Balance
 makeChart('tradeBalanceChart',{type:'bar',data:{labels:tradeYears,datasets:[barDs('Trade Balance',tradeBalance,tradeBalance.map(v=>v>=0?C.green+'80':C.red+'80'),{backgroundColor:tradeBalance.map(v=>v>=0?C.green+'80':C.red+'80')})]},options:{plugins:{tooltip:{callbacks:{label:ctx=>(ctx.parsed.y>=0?'Surplus':'Deficit')+': $'+Math.abs(ctx.parsed.y).toFixed(1)+'B'}},annotation:{annotations:{z:{type:'line',yMin:0,yMax:0,borderColor:'#94a3b8',borderWidth:1}}}},scales:scl('Billions USD')}
 },{sources:[{label:'UN Comtrade (2000-2009)',url:'https://comtradeplus.un.org/'},{label:'USITC DataWeb (2010-2024)',url:'https://dataweb.usitc.gov/'}],csvName:'tractor_trade_balance.csv'});
 
-// 15. AEM Sales
-makeChart('aemSalesChart',{type:'bar',data:{labels:aemYears,datasets:[barDs('100+ HP (2WD)',aemGt100.map(v=>v/1000),C.red+'90'),barDs('4WD',aem4WD.map(v=>v/1000),C.maroon+'90'),barDs('40-100 HP',aemMid.map(v=>v/1000),C.orange+'90'),barDs('Under 40 HP',aemLt40.map(v=>v/1000),C.lightblue+'90')]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.y*1000).toLocaleString()+' units'}}},scales:sclStk('Thousands of Units')}
+// 15. AEM Sales (stacked bar, full width, 2017-2025)
+makeChart('aemSalesChart',{type:'bar',data:{labels:aemYears,datasets:[
+  barDs('100+ HP (2WD)',aemGt100.map(v=>v/1000),C.red+'90'),
+  barDs('4WD (250+ HP)',aem4WD.map(v=>v/1000),C.maroon+'90'),
+  barDs('40-100 HP',aemMid.map(v=>v/1000),C.orange+'90'),
+  barDs('Under 40 HP',aemLt40.map(v=>v/1000),C.lightblue+'90')
+]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': '+(ctx.parsed.y*1000).toLocaleString()+' units'}}},scales:sclStk('Thousands of Units')}
 },{sources:[{label:'AEM Retail Sales Reports',url:'https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports'}],csvName:'aem_tractor_sales.csv'});
 
 // 16. AEM Combines
-makeChart('aemCombineChart',{type:'bar',data:{labels:aemYears,datasets:[barDs('Combine Sales',aemCombines,aemCombines.map(v=>v>=6000?C.green+'80':v>=5500?C.orange+'80':C.red+'80'),{backgroundColor:aemCombines.map(v=>v>=6000?C.green+'80':v>=5500?C.orange+'80':C.red+'80'),borderRadius:3})]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toLocaleString()+' units'}}},scales:scl('Units')}
+makeChart('aemCombineChart',{type:'bar',data:{labels:aemYears,datasets:[barDs('Combine Sales',aemCombines,aemCombines.map(v=>v>=6000?C.green+'80':v>=5000?C.orange+'80':C.red+'80'),{backgroundColor:aemCombines.map(v=>v>=6000?C.green+'80':v>=5000?C.orange+'80':C.red+'80'),borderRadius:3})]},options:{plugins:{tooltip:{callbacks:{label:ctx=>ctx.parsed.y.toLocaleString()+' units'}}},scales:scl('Units')}
 },{sources:[{label:'AEM Retail Sales Reports',url:'https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports'}],csvName:'aem_combine_sales.csv'});
+
+// 17. AEM Total Tractor Sales
+makeChart('aemTotalChart',{type:'bar',data:{labels:aemYears,datasets:[barDs('Total Tractors (All HP + 4WD)',aemTotal.map(v=>v/1000),aemTotal.map(v=>v>=250000?C.green+'80':v>=220000?C.orange+'80':C.red+'80'),{backgroundColor:aemTotal.map(v=>v>=250000?C.green+'80':v>=220000?C.orange+'80':C.red+'80'),borderRadius:3})]},options:{plugins:{tooltip:{callbacks:{label:ctx=>(ctx.parsed.y*1000).toLocaleString()+' units'}}},scales:scl('Thousands of Units')}
+},{sources:[{label:'AEM Retail Sales Reports',url:'https://www.aem.org/market-share-statistics/us-ag-tractor-and-combine-reports'}],csvName:'aem_total_sales.csv'});
 </script>
 </body>
 </html>
