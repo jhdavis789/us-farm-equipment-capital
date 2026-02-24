@@ -298,7 +298,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
         <div class="panel-controls" id="monopoly-controls">
             <div class="control-row">
                 <label>Radius</label>
-                <input type="range" id="mono-radius" min="10" max="200" value="15" step="5"
+                <input type="range" id="mono-radius" min="10" max="60" value="15" step="5"
                     oninput="document.getElementById('mono-radius-val').textContent=this.value+' mi';"
                     onchange="redrawOverlays()">
                 <span class="range-val" id="mono-radius-val">15 mi</span>
@@ -1853,7 +1853,7 @@ function countCompaniesNearPoint(lat, lng, radiusValue, scope, grid, distFn) {
     const gx = Math.floor(lat / GRID_SIZE);
     const gy = Math.floor(lng / GRID_SIZE);
     const field = scope === 'brand' ? F.brand : F.parent;
-    const groups = new Set();
+    const groupCounts = {};
     for (let dx = -cellRadius; dx <= cellRadius; dx++) {
         for (let dy = -cellRadius; dy <= cellRadius; dy++) {
             const cell = grid[`${gx + dx},${gy + dy}`];
@@ -1862,11 +1862,19 @@ function countCompaniesNearPoint(lat, lng, radiusValue, scope, grid, distFn) {
                 const d = filteredDealers[idx];
                 const dist = haversineMiles(lat, lng, d[F.lat], d[F.lng]);
                 const effectiveDist = distFn ? distFn(dist) : dist;
-                if (effectiveDist <= radiusValue) groups.add(d[field]);
+                if (effectiveDist <= radiusValue) {
+                    const g = d[field];
+                    groupCounts[g] = (groupCounts[g] || 0) + 1;
+                }
             }
         }
     }
-    return groups.size;
+    const groups = Object.keys(groupCounts);
+    let dominant = null, maxC = 0;
+    for (const [g, c] of Object.entries(groupCounts)) {
+        if (c > maxC) { maxC = c; dominant = g; }
+    }
+    return { size: groups.length, dominant };
 }
 
 // -- Main computation --
@@ -1915,6 +1923,7 @@ function computeAreaAnalysis() {
     }
 
     let monopolyCount = 0, duopolyCount = 0, competitiveCount = 0;
+    const monopolyByCompany = {};
 
     gridPoints.forEach(([lat, lng]) => {
         // Territory
@@ -1927,9 +1936,12 @@ function computeAreaAnalysis() {
         }
 
         // Competition
-        const nCompanies = countCompaniesNearPoint(lat, lng, areaRadius, scope, fGrid, distFn);
-        if (nCompanies <= 1) monopolyCount++;
-        else if (nCompanies === 2) duopolyCount++;
+        const result = countCompaniesNearPoint(lat, lng, areaRadius, scope, fGrid, distFn);
+        if (result.size <= 1) {
+            monopolyCount++;
+            if (result.dominant) monopolyByCompany[result.dominant] = (monopolyByCompany[result.dominant] || 0) + 1;
+        }
+        else if (result.size === 2) duopolyCount++;
         else competitiveCount++;
     });
 
@@ -1944,6 +1956,7 @@ function computeAreaAnalysis() {
         monopolyCount,
         duopolyCount,
         competitiveCount,
+        monopolyByCompany,
         radius: areaRadius,
         radiusLabel,
         scope,
@@ -2010,6 +2023,7 @@ function renderAnalysisPanel(result) {
 
     html += '<div class="analysis-section">';
     html += `<h4>Competition (${result.radiusLabel || result.radius + ' mi'} radius, by ${result.scope})</h4>`;
+    // Overall bar: monopoly / duopoly / competitive
     html += '<div class="competition-bars">';
     if (result.monopolyCount > 0) html += `<div class="comp-seg" style="width:${monoPct}%;background:#22c55e;" title="Monopoly: ${monoPct}%">${monoPct > 8 ? monoPct + '%' : ''}</div>`;
     if (result.duopolyCount > 0) html += `<div class="comp-seg" style="width:${duoPct}%;background:#eab308;" title="Duopoly: ${duoPct}%">${duoPct > 8 ? duoPct + '%' : ''}</div>`;
@@ -2020,6 +2034,32 @@ function renderAnalysisPanel(result) {
     html += `<span><span style="color:#eab308;">&#9632;</span> Duopoly ${duoPct}%</span>`;
     html += `<span><span style="color:#3b82f6;">&#9632;</span> 3+ ${compPct}%</span>`;
     html += '</div>';
+
+    // Monopoly breakdown by company
+    if (result.monopolyByCompany && Object.keys(result.monopolyByCompany).length > 0) {
+        const colorMap = result.scope === 'brand' ? BRAND_COLORS : PARENT_COLORS;
+        const sorted = Object.entries(result.monopolyByCompany).sort((a, b) => b[1] - a[1]);
+        html += `<div style="margin-top:8px;"><div style="font-size:10px;color:#888;margin-bottom:4px;">Monopoly territory held by:</div>`;
+        // Stacked bar showing who holds the monopoly
+        html += '<div class="competition-bars">';
+        sorted.forEach(([name, count]) => {
+            const pct = (count / total * 100).toFixed(1);
+            const c = colorMap[name] || '#888';
+            html += `<div class="comp-seg" style="width:${pct}%;background:${c};" title="${name}: ${pct}%">${pct > 8 ? pct + '%' : ''}</div>`;
+        });
+        // Remainder = duopoly + competitive
+        const nonMonoPct = (+duoPct + +compPct).toFixed(1);
+        if (+nonMonoPct > 0) html += `<div class="comp-seg" style="width:${nonMonoPct}%;background:#2a2d3a;border:1px solid #3a3d4a;" title="Non-monopoly: ${nonMonoPct}%"></div>`;
+        html += '</div>';
+        // Legend
+        html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;font-size:10px;color:#888;">';
+        sorted.forEach(([name, count]) => {
+            const pct = (count / total * 100).toFixed(1);
+            const c = colorMap[name] || '#888';
+            html += `<span><span style="color:${c};">&#9632;</span> ${name} ${pct}%</span>`;
+        });
+        html += '</div></div>';
+    }
     html += '</div>';
 
     content.innerHTML = html;
