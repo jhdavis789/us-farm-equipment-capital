@@ -1602,6 +1602,7 @@ let analysisShape = null; // Leaflet layer (circle, rectangle, or polygon)
 let analysisShapeData = null; // { type, center, radius } | { type, bounds } | { type, latlngs }
 let drawState = {}; // transient drawing state
 let analysisBrandView = { dealers: false, territory: false }; // toggle parent vs brand
+let analysisServedOnly = true; // default: show competition as % of served land
 
 function toggleAreaAnalysis() {
     areaAnalysisOn = !areaAnalysisOn;
@@ -2039,26 +2040,37 @@ function renderAnalysisPanel(result) {
     html += '</div>';
 
     // 3. Competition
-    const total = result.monopolyCount + result.duopolyCount + result.competitiveCount + result.unservedCount;
-    const monoPct = (result.monopolyCount / total * 100).toFixed(1);
-    const duoPct = (result.duopolyCount / total * 100).toFixed(1);
-    const compPct = (result.competitiveCount / total * 100).toFixed(1);
-    const unservedPct = (result.unservedCount / total * 100).toFixed(1);
+    const totalAll = result.monopolyCount + result.duopolyCount + result.competitiveCount + result.unservedCount;
+    const servedTotal = result.monopolyCount + result.duopolyCount + result.competitiveCount;
+    const showServedOnly = analysisServedOnly;
+    const denom = showServedOnly ? servedTotal : totalAll;
+
+    const monoPct = denom > 0 ? (result.monopolyCount / denom * 100).toFixed(1) : '0.0';
+    const duoPct = denom > 0 ? (result.duopolyCount / denom * 100).toFixed(1) : '0.0';
+    const compPct = denom > 0 ? (result.competitiveCount / denom * 100).toFixed(1) : '0.0';
+    const unservedPct = totalAll > 0 ? (result.unservedCount / totalAll * 100).toFixed(1) : '0.0';
 
     html += '<div class="analysis-section">';
-    html += `<h4>Competition (${result.radiusLabel || result.radius + ' mi'} radius, by ${result.scope})</h4>`;
-    // Overall bar: monopoly / duopoly / competitive / unserved
+    html += `<h4>Competition (${result.radiusLabel || result.radius + ' mi'} radius, by ${result.scope})`;
+    html += `<span class="analysis-toggle-brand" onclick="toggleServedOnly()">${showServedOnly ? 'All land' : 'Served only'}</span></h4>`;
+
+    // Bar widths: when showing served-only, the 3 categories fill 100%; otherwise include unserved
+    const barMono = showServedOnly ? monoPct : (result.monopolyCount / totalAll * 100).toFixed(1);
+    const barDuo = showServedOnly ? duoPct : (result.duopolyCount / totalAll * 100).toFixed(1);
+    const barComp = showServedOnly ? compPct : (result.competitiveCount / totalAll * 100).toFixed(1);
+    const barUnserved = showServedOnly ? 0 : unservedPct;
+
     html += '<div class="competition-bars">';
-    if (result.monopolyCount > 0) html += `<div class="comp-seg" style="width:${monoPct}%;background:#22c55e;" title="Monopoly: ${monoPct}%">${monoPct > 8 ? monoPct + '%' : ''}</div>`;
-    if (result.duopolyCount > 0) html += `<div class="comp-seg" style="width:${duoPct}%;background:#eab308;" title="Duopoly: ${duoPct}%">${duoPct > 8 ? duoPct + '%' : ''}</div>`;
-    if (result.competitiveCount > 0) html += `<div class="comp-seg" style="width:${compPct}%;background:#3b82f6;" title="Competitive: ${compPct}%">${compPct > 8 ? compPct + '%' : ''}</div>`;
-    if (result.unservedCount > 0) html += `<div class="comp-seg" style="width:${unservedPct}%;background:#4a4d5a;" title="Unserved: ${unservedPct}%">${unservedPct > 8 ? unservedPct + '%' : ''}</div>`;
+    if (result.monopolyCount > 0) html += `<div class="comp-seg" style="width:${barMono}%;background:#22c55e;" title="Monopoly: ${monoPct}%">${barMono > 8 ? monoPct + '%' : ''}</div>`;
+    if (result.duopolyCount > 0) html += `<div class="comp-seg" style="width:${barDuo}%;background:#eab308;" title="Duopoly: ${duoPct}%">${barDuo > 8 ? duoPct + '%' : ''}</div>`;
+    if (result.competitiveCount > 0) html += `<div class="comp-seg" style="width:${barComp}%;background:#3b82f6;" title="Competitive: ${compPct}%">${barComp > 8 ? compPct + '%' : ''}</div>`;
+    if (+barUnserved > 0) html += `<div class="comp-seg" style="width:${barUnserved}%;background:#4a4d5a;" title="Unserved: ${unservedPct}%">${barUnserved > 8 ? unservedPct + '%' : ''}</div>`;
     html += '</div>';
     html += `<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:10px;color:#888;">`;
     html += `<span><span style="color:#22c55e;">&#9632;</span> Monopoly ${monoPct}%</span>`;
     html += `<span><span style="color:#eab308;">&#9632;</span> Duopoly ${duoPct}%</span>`;
     html += `<span><span style="color:#3b82f6;">&#9632;</span> 3+ ${compPct}%</span>`;
-    if (+unservedPct > 0) html += `<span><span style="color:#4a4d5a;">&#9632;</span> Unserved ${unservedPct}%</span>`;
+    if (+unservedPct > 0) html += `<span><span style="color:#4a4d5a;">&#9632;</span> Unserved ${unservedPct}% of all land</span>`;
     html += '</div>';
 
     // Monopoly breakdown by company
@@ -2066,21 +2078,19 @@ function renderAnalysisPanel(result) {
         const colorMap = result.scope === 'brand' ? BRAND_COLORS : PARENT_COLORS;
         const sorted = Object.entries(result.monopolyByCompany).sort((a, b) => b[1] - a[1]);
         html += `<div style="margin-top:8px;"><div style="font-size:10px;color:#888;margin-bottom:4px;">Monopoly territory held by:</div>`;
-        // Stacked bar showing who holds the monopoly
         html += '<div class="competition-bars">';
         sorted.forEach(([name, count]) => {
-            const pct = (count / total * 100).toFixed(1);
+            const pct = (count / denom * 100).toFixed(1);
             const c = colorMap[name] || '#888';
             html += `<div class="comp-seg" style="width:${pct}%;background:${c};" title="${name}: ${pct}%">${pct > 8 ? pct + '%' : ''}</div>`;
         });
         // Remainder = non-monopoly
-        const nonMonoPct = (+duoPct + +compPct + +unservedPct).toFixed(1);
+        const nonMonoPct = (100 - sorted.reduce((s, [, c]) => s + c / denom * 100, 0)).toFixed(1);
         if (+nonMonoPct > 0) html += `<div class="comp-seg" style="width:${nonMonoPct}%;background:#2a2d3a;border:1px solid #3a3d4a;" title="Non-monopoly: ${nonMonoPct}%"></div>`;
         html += '</div>';
-        // Legend
         html += '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:4px;font-size:10px;color:#888;">';
         sorted.forEach(([name, count]) => {
-            const pct = (count / total * 100).toFixed(1);
+            const pct = (count / denom * 100).toFixed(1);
             const c = colorMap[name] || '#888';
             html += `<span><span style="color:${c};">&#9632;</span> ${name} ${pct}%</span>`;
         });
@@ -2101,6 +2111,11 @@ function renderAnalysisPanel(result) {
 function toggleAnalysisView(section) {
     analysisBrandView[section] = !analysisBrandView[section];
     computeAreaAnalysis();
+}
+
+function toggleServedOnly() {
+    analysisServedOnly = !analysisServedOnly;
+    if (analysisShapeData) computeAreaAnalysis();
 }
 
 // Hook into applyFilters to re-run analysis when filters change
