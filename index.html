@@ -210,6 +210,7 @@ function toArrays(raw){const y=[],v=[];for(const[k,val] of Object.entries(raw)){
 
 const inv=toArrays(D.investRaw),dep=toArrays(D.deprecRaw),stk=toArrays(D.stockRaw),pri=toArrays(D.priceRaw);
 const ecRatio=inv.values.map((v,i)=>+(v/dep.values[i]).toFixed(3));
+const netAnnual=inv.values.map((v,i)=>+(v-dep.values[i]).toFixed(2));
 const cumulativeNet=[];let _s=0;inv.values.forEach((v,i)=>{_s+=v-dep.values[i];cumulativeNet.push(+_s.toFixed(1));});
 
 // Real investment (all years, computed from nominal / price index)
@@ -335,7 +336,13 @@ function makeChart(id,config,meta={}){
   const gearBtn=document.createElement('button');gearBtn.className='icon-btn';gearBtn.innerHTML='&#9881;';
   const gearPop=document.createElement('div');gearPop.className='icon-pop';
   const macroOvs=OVERLAYS.filter(o=>o.group==='macro'),stockOvs=OVERLAYS.filter(o=>o.group==='stocks');
-  gearPop.innerHTML='<h4>Macro Overlay (Right Axis)</h4><ul>'+macroOvs.map(o=>'<li><label><input type="checkbox" data-overlay="'+o.key+'"> '+o.label+'</label></li>').join('')+'</ul>'
+  let toggleHTML='';
+  if(meta.toggles&&meta.toggles.length){
+    toggleHTML='<h4>Series</h4><ul>'+meta.toggles.map(t=>'<li><label><input type="checkbox" data-toggle-ds="'+t.idx+'"'+(t.on?' checked':'')+
+      '> <span style="color:'+t.color+';font-weight:600">&#9632;</span> '+t.label+'</label></li>').join('')+'</ul>'
+      +'<div style="border-top:1px solid #f1f5f9;margin-top:6px;padding-top:6px"></div>';
+  }
+  gearPop.innerHTML=toggleHTML+'<h4>Macro Overlay (Right Axis)</h4><ul>'+macroOvs.map(o=>'<li><label><input type="checkbox" data-overlay="'+o.key+'"> '+o.label+'</label></li>').join('')+'</ul>'
     +'<h4 style="margin-top:6px;border-top:1px solid #f1f5f9;padding-top:6px">Stock Total Returns (2017=100)</h4><ul>'+stockOvs.map(o=>'<li><label><input type="checkbox" data-overlay="'+o.key+'"> <span style="color:'+o.color+';font-weight:600">&#9632;</span> '+o.label+'</label></li>').join('')+'</ul>';
   gearBtn.addEventListener('click',e=>{e.stopPropagation();gearPop.classList.toggle('open');});
   gearWrap.appendChild(gearBtn);gearWrap.appendChild(gearPop);
@@ -372,6 +379,12 @@ function makeChart(id,config,meta={}){
   }
 
   const chart=new Chart(canvas,config);
+
+  // Set initial visibility for toggled datasets
+  if(meta.toggles){
+    meta.toggles.forEach(t=>{if(!t.on)chart.setDatasetVisibility(t.idx,false);});
+    chart.update('none');
+  }
 
   // Track active overlays
   const activeOverlays=new Set();
@@ -418,6 +431,22 @@ function makeChart(id,config,meta={}){
     cb.addEventListener('change',()=>toggleOverlay(cb.dataset.overlay,cb.checked));
   });
 
+  // Wire up dataset toggle checkboxes
+  gearPop.querySelectorAll('input[data-toggle-ds]').forEach(cb=>{
+    const dsIdx=+cb.dataset.toggleDs;
+    cb.addEventListener('change',()=>{
+      const ds=chart.data.datasets[dsIdx];
+      if(ds){
+        chart.setDatasetVisibility(dsIdx,cb.checked);
+        // Show/hide right axis if dataset uses one
+        if(ds.yAxisID&&chart.options.scales[ds.yAxisID]){
+          chart.options.scales[ds.yAxisID].display=cb.checked;
+        }
+        chart.update();
+      }
+    });
+  });
+
   // Reset: zoom + range + overlays
   resetBtn.addEventListener('click',()=>{
     chart.resetZoom();
@@ -434,6 +463,18 @@ function makeChart(id,config,meta={}){
     delete chart.options.scales.yOverlay;
     delete chart.options.scales.yStocks;
     gearPop.querySelectorAll('input[data-overlay]').forEach(cb=>{cb.checked=false;});
+    // Reset dataset toggles to initial state
+    if(meta.toggles){
+      gearPop.querySelectorAll('input[data-toggle-ds]').forEach(cb=>{
+        const t=meta.toggles.find(t=>t.idx===+cb.dataset.toggleDs);
+        cb.checked=!!t&&!!t.on;
+        chart.setDatasetVisibility(+cb.dataset.toggleDs,cb.checked);
+        const ds=chart.data.datasets[+cb.dataset.toggleDs];
+        if(ds&&ds.yAxisID&&chart.options.scales[ds.yAxisID]){
+          chart.options.scales[ds.yAxisID].display=cb.checked;
+        }
+      });
+    }
     chart.update('none');
     resetBtn.style.display='none';
   });
@@ -463,11 +504,26 @@ const longDefault=1;
 // ============================================================
 
 // 1. Investment vs Depreciation
+const cornAligned=inv.years.map(y=>D.cornRaw[y]!=null?D.cornRaw[y]:null);
 makeChart('investVsDeprecChart',{
   type:'line',
-  data:{labels:inv.years,datasets:[lineDs('Gross Investment',inv.values,C.green),lineDs('Depreciation',dep.values,C.red,{borderDash:[6,3]})]},
-  options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>ctx.dataset.label+': $'+ctx.parsed.y.toFixed(1)+'B'}},annotation:{annotations:{farmCrisis:{type:'box',xMin:1982,xMax:1987,backgroundColor:'rgba(220,38,38,0.06)',borderWidth:0,label:{display:true,content:'Farm Crisis',position:'start',font:{size:10},color:'#dc262680'}},boom:{type:'box',xMin:2012,xMax:2014,backgroundColor:'rgba(22,163,74,0.06)',borderWidth:0,label:{display:true,content:'Commodity Boom',position:'start',font:{size:10},color:'#16a34a80'}},now:{type:'box',xMin:2023,xMax:2025,backgroundColor:'rgba(220,38,38,0.06)',borderWidth:0,label:{display:true,content:'Current Downturn',position:'start',font:{size:10},color:'#dc262680'}}}}},scales:scl('Billions USD (nominal)')}
-},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'investment_vs_depreciation.csv',formulaNote:'<strong>BEA Depreciation Formula:</strong> Geometric declining-balance: &delta; = R / T, where R &asymp; 1.65 (declining-balance rate) and T = 15 years (service life). Annual depreciation &asymp; 11% of current-cost net stock. This is a statistical estimate based on asset age, not actual usage hours.'});
+  data:{labels:inv.years,datasets:[
+    lineDs('Gross Investment',inv.values,C.green),
+    lineDs('Depreciation',dep.values,C.red,{borderDash:[6,3]}),
+    lineDs('Real Gross Investment',realInvValues,C.blue,{borderWidth:2,borderDash:[8,4]}),
+    lineDs('Net Investment',netAnnual,C.purple,{borderWidth:2}),
+    lineDs('Corn Price Index',cornAligned,C.orange,{borderWidth:1.8,borderDash:[4,2],yAxisID:'yCorn',spanGaps:false})
+  ]},
+  options:{interaction:{mode:'index',intersect:false},plugins:{tooltip:{callbacks:{label:ctx=>{
+    if(ctx.dataset.yAxisID==='yCorn') return ctx.dataset.label+': '+ctx.parsed.y.toFixed(1)+' (2017=100)';
+    return ctx.dataset.label+': $'+ctx.parsed.y.toFixed(1)+'B';
+  }}},annotation:{annotations:{farmCrisis:{type:'box',xMin:1982,xMax:1987,backgroundColor:'rgba(220,38,38,0.06)',borderWidth:0,label:{display:true,content:'Farm Crisis',position:'start',font:{size:10},color:'#dc262680'}},boom:{type:'box',xMin:2012,xMax:2014,backgroundColor:'rgba(22,163,74,0.06)',borderWidth:0,label:{display:true,content:'Commodity Boom',position:'start',font:{size:10},color:'#16a34a80'}},now:{type:'box',xMin:2023,xMax:2025,backgroundColor:'rgba(220,38,38,0.06)',borderWidth:0,label:{display:true,content:'Current Downturn',position:'start',font:{size:10},color:'#dc262680'}}}}},scales:{...scl('Billions USD'),yCorn:{position:'right',title:{display:true,text:'Corn Price (2017=100)'},grid:{display:false},display:false}}}
+},{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'},{label:'FRED: Corn Price (PMAIZMTUSDM)',url:'https://fred.stlouisfed.org/series/PMAIZMTUSDM'}],ranges:longRanges,defaultRange:longDefault,csvName:'investment_vs_depreciation.csv',formulaNote:'<strong>BEA Depreciation Formula:</strong> Geometric declining-balance: &delta; = R / T, where R &asymp; 1.65 (declining-balance rate) and T = 15 years (service life). Annual depreciation &asymp; 11% of current-cost net stock. This is a statistical estimate based on asset age, not actual usage hours.<br><strong>Real Gross Investment:</strong> Nominal &divide; BEA ag machinery price index (2017=100).<br><strong>Net Investment:</strong> Gross investment &minus; depreciation.',
+  toggles:[
+    {idx:2,label:'Real Gross Investment',color:C.blue,on:false},
+    {idx:3,label:'Net Investment',color:C.purple,on:false},
+    {idx:4,label:'Corn Price (2017=100)',color:C.orange,on:false}
+  ]});
 
 // 2. E/C Ratio
 makeChart('ecRatioChart',{
@@ -484,7 +540,6 @@ makeChart('cumulativeNetChart',{
 },{sources:[{label:'FRED: Investment (C268RC1A027NBEA)',url:'https://fred.stlouisfed.org/series/C268RC1A027NBEA'},{label:'FRED: Depreciation (BOGZ1FA136330023Q)',url:'https://fred.stlouisfed.org/series/BOGZ1FA136330023Q'}],ranges:longRanges,defaultRange:longDefault,csvName:'cumulative_net_investment.csv',formulaNote:'This is cumulative (investment &minus; depreciation) from 1950 onward. It does <strong>not</strong> account for international trade in used equipment. Some domestically-invested tractors are later exported as used, meaning the actual productive domestic stock may be lower than this suggests. The BEA net stock series (BOGZ1FL135013265Q) is the more complete measure.'});
 
 // 3b. Rolling & Decay-Weighted Net Investment
-const netAnnual=inv.values.map((v,i)=>+(v-dep.values[i]).toFixed(2));
 // L10Y rolling sum
 const l10y=inv.years.map((_,i)=>{const start=Math.max(0,i-9);let s=0;for(let j=start;j<=i;j++)s+=netAnnual[j];return+s.toFixed(1);});
 // L5Y rolling sum
