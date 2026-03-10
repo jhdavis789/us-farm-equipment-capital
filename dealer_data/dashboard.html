@@ -299,8 +299,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
             <div class="control-row">
                 <label>Radius</label>
                 <input type="range" id="mono-radius" min="10" max="60" value="15" step="5"
-                    oninput="document.getElementById('mono-radius-val').textContent=this.value+' mi';"
-                    onchange="redrawOverlays()">
+                    oninput="syncRadius('mono')"
+                    onchange="redrawOverlays();if(analysisShapeData)computeAreaAnalysis()">
                 <span class="range-val" id="mono-radius-val">15 mi</span>
             </div>
             <div class="control-row">
@@ -392,10 +392,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-
             <button class="sel-btn" id="clear-area-btn" style="display:none;margin-top:4px;" onclick="clearAnalysisShape()">Clear shape</button>
             <div class="control-row" style="margin-top:8px;">
                 <label>Radius</label>
-                <input type="range" id="area-radius" min="10" max="200" value="50" step="5"
-                    oninput="document.getElementById('area-radius-val').textContent=this.value+(document.getElementById('area-dist-mode').value==='drivetime'?' min':' mi');"
-                    onchange="if(analysisShapeData)computeAreaAnalysis()">
-                <span class="range-val" id="area-radius-val">50 mi</span>
+                <input type="range" id="area-radius" min="10" max="60" value="15" step="5"
+                    oninput="syncRadius('area')"
+                    onchange="if(analysisShapeData)computeAreaAnalysis();if(monopolyOn)redrawOverlays()">
+                <span class="range-val" id="area-radius-val">15 mi</span>
             </div>
             <div class="control-row">
                 <label>Distance</label>
@@ -517,6 +517,26 @@ fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/land-110m.json')
         landGeoJSON = topojson.feature(topo, topo.objects.land);
     })
     .catch(() => {}); // fail silently, just won't clip
+
+// Keep monopoly radius and area-analysis radius in sync
+let _syncingRadius = false;
+function syncRadius(source) {
+    if (_syncingRadius) return;
+    _syncingRadius = true;
+    const monoEl = document.getElementById('mono-radius');
+    const areaEl = document.getElementById('area-radius');
+    const isDriveTime = document.getElementById('area-dist-mode').value === 'drivetime';
+    if (source === 'mono') {
+        areaEl.value = monoEl.value;
+        document.getElementById('mono-radius-val').textContent = monoEl.value + ' mi';
+        document.getElementById('area-radius-val').textContent = areaEl.value + (isDriveTime ? ' min' : ' mi');
+    } else {
+        monoEl.value = areaEl.value;
+        document.getElementById('area-radius-val').textContent = areaEl.value + (isDriveTime ? ' min' : ' mi');
+        document.getElementById('mono-radius-val').textContent = monoEl.value + ' mi';
+    }
+    _syncingRadius = false;
+}
 
 const _MAJOR_AG_KW = ['4 wd','combines','large','cotton','sprayer','tillage','forage','harvester','baler','planter','seeder'];
 function isAgDealer(d) {
@@ -1922,7 +1942,7 @@ function computeAreaAnalysis() {
         radiusLabel = `${areaRadius} min`;
     }
 
-    let monopolyCount = 0, duopolyCount = 0, competitiveCount = 0;
+    let monopolyCount = 0, duopolyCount = 0, competitiveCount = 0, unservedCount = 0;
     const monopolyByCompany = {};
 
     gridPoints.forEach(([lat, lng]) => {
@@ -1937,7 +1957,9 @@ function computeAreaAnalysis() {
 
         // Competition
         const result = countCompaniesNearPoint(lat, lng, areaRadius, scope, fGrid, distFn);
-        if (result.size <= 1) {
+        if (result.size === 0) {
+            unservedCount++;
+        } else if (result.size === 1) {
             monopolyCount++;
             if (result.dominant) monopolyByCompany[result.dominant] = (monopolyByCompany[result.dominant] || 0) + 1;
         }
@@ -1956,6 +1978,7 @@ function computeAreaAnalysis() {
         monopolyCount,
         duopolyCount,
         competitiveCount,
+        unservedCount,
         monopolyByCompany,
         radius: areaRadius,
         radiusLabel,
@@ -2016,23 +2039,26 @@ function renderAnalysisPanel(result) {
     html += '</div>';
 
     // 3. Competition
-    const total = result.monopolyCount + result.duopolyCount + result.competitiveCount;
+    const total = result.monopolyCount + result.duopolyCount + result.competitiveCount + result.unservedCount;
     const monoPct = (result.monopolyCount / total * 100).toFixed(1);
     const duoPct = (result.duopolyCount / total * 100).toFixed(1);
     const compPct = (result.competitiveCount / total * 100).toFixed(1);
+    const unservedPct = (result.unservedCount / total * 100).toFixed(1);
 
     html += '<div class="analysis-section">';
     html += `<h4>Competition (${result.radiusLabel || result.radius + ' mi'} radius, by ${result.scope})</h4>`;
-    // Overall bar: monopoly / duopoly / competitive
+    // Overall bar: monopoly / duopoly / competitive / unserved
     html += '<div class="competition-bars">';
     if (result.monopolyCount > 0) html += `<div class="comp-seg" style="width:${monoPct}%;background:#22c55e;" title="Monopoly: ${monoPct}%">${monoPct > 8 ? monoPct + '%' : ''}</div>`;
     if (result.duopolyCount > 0) html += `<div class="comp-seg" style="width:${duoPct}%;background:#eab308;" title="Duopoly: ${duoPct}%">${duoPct > 8 ? duoPct + '%' : ''}</div>`;
     if (result.competitiveCount > 0) html += `<div class="comp-seg" style="width:${compPct}%;background:#3b82f6;" title="Competitive: ${compPct}%">${compPct > 8 ? compPct + '%' : ''}</div>`;
+    if (result.unservedCount > 0) html += `<div class="comp-seg" style="width:${unservedPct}%;background:#4a4d5a;" title="Unserved: ${unservedPct}%">${unservedPct > 8 ? unservedPct + '%' : ''}</div>`;
     html += '</div>';
-    html += `<div style="display:flex;gap:12px;margin-top:6px;font-size:10px;color:#888;">`;
+    html += `<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:10px;color:#888;">`;
     html += `<span><span style="color:#22c55e;">&#9632;</span> Monopoly ${monoPct}%</span>`;
     html += `<span><span style="color:#eab308;">&#9632;</span> Duopoly ${duoPct}%</span>`;
     html += `<span><span style="color:#3b82f6;">&#9632;</span> 3+ ${compPct}%</span>`;
+    if (+unservedPct > 0) html += `<span><span style="color:#4a4d5a;">&#9632;</span> Unserved ${unservedPct}%</span>`;
     html += '</div>';
 
     // Monopoly breakdown by company
@@ -2047,8 +2073,8 @@ function renderAnalysisPanel(result) {
             const c = colorMap[name] || '#888';
             html += `<div class="comp-seg" style="width:${pct}%;background:${c};" title="${name}: ${pct}%">${pct > 8 ? pct + '%' : ''}</div>`;
         });
-        // Remainder = duopoly + competitive
-        const nonMonoPct = (+duoPct + +compPct).toFixed(1);
+        // Remainder = non-monopoly
+        const nonMonoPct = (+duoPct + +compPct + +unservedPct).toFixed(1);
         if (+nonMonoPct > 0) html += `<div class="comp-seg" style="width:${nonMonoPct}%;background:#2a2d3a;border:1px solid #3a3d4a;" title="Non-monopoly: ${nonMonoPct}%"></div>`;
         html += '</div>';
         // Legend
